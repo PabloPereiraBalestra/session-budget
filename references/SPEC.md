@@ -1,6 +1,6 @@
 # Session Budget System — Implementation Spec
 
-**Version: v13 (2026-07-04).** The canonical copy of this file is `references/SPEC.md` in the `session-budget` skill repo. Per-project installs (the CLAUDE.md protocol section, and any local spec copy a project may keep) are derived and get resynced from there (see §0.1 version sync rule). Upgrading the system = editing this file in the skill repo, bumping the version, committing, then resuming affected projects.
+**Version: v14 (2026-07-04).** The canonical copy of this file is `references/SPEC.md` in the `session-budget` skill repo. Per-project installs (the CLAUDE.md protocol section, and any local spec copy a project may keep) are derived and get resynced from there (see §0.1 version sync rule). Upgrading the system = editing this file in the skill repo, bumping the version, committing, then resuming affected projects.
 
 Token-budget-aware planning for Claude Code: work is split into atomic blocks, each block's session cost is measured against the plan's 5-hour rate limit, and execution stops cleanly before spilling into extra usage. The system self-installs, self-measures, and self-tunes.
 
@@ -22,6 +22,7 @@ Verify each deliverable of §1 exists:
 | `SESSION_STATE.md` | exists at project root |
 | `budget_log.jsonl` | exists at project root |
 | `.claude/agents/implementer.md` | exists with `model: sonnet` frontmatter |
+| `~/.claude/agents/budget-auditor.md` | exists with `model: sonnet` frontmatter (user-level, shared across every project) |
 
 If ANY item is missing: the first block of the plan is **B0 [MECHANICAL, M, 12] — bootstrap**: implement every missing §1 deliverable, run the §4 acceptance tests, and show SESSION_STATE.md for approval before committing. The current session runs on manual checkpoints (the snapshot cannot exist or be trusted yet).
 
@@ -170,6 +171,29 @@ You execute exactly one work block per invocation, as scoped in the delegation p
 
 The `model: sonnet` field pins this agent regardless of the main thread's model — this is what makes per-block model switching automatic. Budget measurement and logging stay in the orchestrator, never in this agent.
 
+### 1.6 Budget-auditor subagent (user-level)
+
+Create `~/.claude/agents/budget-auditor.md` only if absent (personal scope, shared across every project — per Claude Code's official subagent docs, user subagents live in `~/.claude/agents/`; project subagents in `.claude/agents/` take precedence on a name collision). Deliberately named `budget-auditor`, not a generic name, to avoid colliding with another tool's subagent at the same personal scope.
+
+```markdown
+---
+name: budget-auditor
+description: Audits a project's actual compliance with the session-budget protocol — logging schema, calibration exclusions, gating, and the spec's §6 success criteria — using only that project's on-disk artifacts (budget_log.jsonl, SESSION_STATE.md, git commits). Invoke on demand, never automatically on session_end. Must run blind to whoever executed the audited blocks: the invoking prompt must not describe what happened, only point at the files and commit range to read.
+model: sonnet
+---
+You audit the session-budget protocol for one project, using exactly three sources: the full `budget_log.jsonl`, `SESSION_STATE.md`, and the git commits the audited session references. Nothing else — no conversation history, no other files, no assumption about what "probably" happened during the session. A SESSION_STATE.md claim with no backing commit or log line is unverified, not true.
+
+For every check, quote the exact log line or commit as evidence:
+- Every `block`/`session_end`/`correction`/`fix` line has the required fields and valid enum values (CLAUDE.md's Metrics logging section is the schema).
+- Self-tuning excluded `parallel:true` and `spans_reset:true` lines from calibration medians.
+- Go/no-go was actually respected: no block's `start_pct` implies remaining budget was below (estimate + buffer) at the time it started.
+- §6 success criteria, computed directly from the log: zero `limit_hit`, mean `end_pct` ≥80 on `budget_gate` cuts, ≤30% median estimation error per (size, model) bucket, ≥90% `clean=true`.
+
+Report as a short table: check, pass/fail, evidence. If the spec itself should change based on what you find, propose the change as text with a suggested version bump — never edit CLAUDE.md, budget_log.jsonl, or SESSION_STATE.md yourself.
+```
+
+Trigger: on demand only, integrated into the §5 Budget report prompt. No auto-trigger on `session_end` (the worst moment to spend pool; after a `limit_hit` the opportunity doesn't even exist).
+
 ---
 
 ## 2. stdin JSON reference
@@ -220,6 +244,7 @@ Run all, report results:
 7. `.claude/agents/implementer.md` has valid frontmatter including `model: sonnet`.
 8. **Idempotency**: run the full installation a second time → zero diffs (no duplicated CLAUDE.md section, settings unchanged, state/log files untouched).
 9. After restart, the live statusline renders and the snapshot's timestamp updates after a real assistant response.
+10. `~/.claude/agents/budget-auditor.md` has valid frontmatter including `model: sonnet` and `name: budget-auditor`, and re-running the install a second time produces zero diff (install-if-absent).
 
 **Mandatory cleanup after tests 1-8:** delete `~/.claude/usage_snapshot.json`. The tests fill it with mock data; if it survives, the first post-restart resume can mistake mock percentages for a live budget. It regenerates on the first live render (test 9).
 
@@ -249,7 +274,7 @@ Retomamos según protocolo. Corré el preflight (§0), leé SESSION_STATE.md y e
 Budget report (weekly, or whenever the system feels off):
 
 ```
-Reporte de presupuesto: leé budget_log.jsonl completo y mostrame en una tabla corta: cortes por tipo (limit_hit / budget_gate / user_cut / work_done), end_pct promedio en cortes por budget_gate, error mediano de estimación por (tamaño, modelo) con su dirección (sobre o subestimación), calibración vigente vs defaults, bloques con clean=false, y sesiones en modo manual. Contrastá contra los criterios de éxito del spec y si alguno no se cumple, proponé el ajuste con la evidencia del log.
+Reporte de presupuesto: leé budget_log.jsonl completo y mostrame en una tabla corta: cortes por tipo (limit_hit / budget_gate / user_cut / work_done), end_pct promedio en cortes por budget_gate, error mediano de estimación por (tamaño, modelo) con su dirección (sobre o subestimación), calibración vigente vs defaults, bloques con clean=false, y sesiones en modo manual. Contrastá contra los criterios de éxito del spec y si alguno no se cumple, proponé el ajuste con la evidencia del log. Si además querés una auditoría formal e independiente, pedime que invoque al subagente budget-auditor sobre este mismo log y SESSION_STATE.md.
 ```
 
 ---
