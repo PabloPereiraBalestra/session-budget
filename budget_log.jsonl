@@ -1,0 +1,2 @@
+{"t":"block","ts":"2026-07-04T13:46:28-0300","tag":"MECHANICAL","size":"S","model":"Sonnet 5","est":5,"actual":1,"start_pct":57,"end_pct":58,"commit":"6e7a450","clean":true}
+{"t":"block","ts":"2026-07-04T14:49:03-0300","tag":"MECHANICAL","size":"S","model":"Sonnet 5","est":5,"actual":null,"start_pct":58,"end_pct":9,"commit":"6e7a450","clean":true,"spans_reset":true}
