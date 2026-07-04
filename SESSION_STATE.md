@@ -23,11 +23,12 @@ Backlog source: bloques acordados en esta conversación (bootstrap del repo sess
 ## Completed
 - [MECHANICAL] S — B1: scaffold session-budget (SKILL.md, references/SPEC.md, README.md, LICENSE, .gitignore) | commit 6e7a450 | session % 57→58 | actual 1 punto
 - [MECHANICAL] S — B2: git init (main), primer commit, gh repo create --public, push, resync references/SPEC.md a v13 (canónico pasa a ser este repo, Downloads deja de leerse como fuente) | commit 6e7a450 | session % 58→9 (spans_reset: la ventana de 5h resetió durante el bloque, actual no válido) | actual null
+- [MECHANICAL] M — B3: CLAUDE.md (protocolo, idéntico a §1.2 verificado), SESSION_STATE.md, budget_log.jsonl, .claude/agents/implementer.md; tests §4 6/7/8 verdes | commit af48c95 | session % 9→10 | actual 1 punto
 
 ## Cost calibration
 <!-- medians by (size, model) from budget_log.jsonl, e.g. S/Sonnet=4, M/Sonnet=9, M/Fable=14 -->
 <!-- defaults when no data: S=5 M=12 L=25 | current buffer=10 cap=20 -->
-Sin datos suficientes todavía (1 solo actual no-null: B1=1 punto; B2 excluido por spans_reset). Se sigue con defaults S=5 M=12 L=25, buffer=10, cap=20.
+Sin datos suficientes todavía (2 actuales no-null: B1=1, B3=1; B2 excluido por spans_reset). Se sigue con defaults S=5 M=12 L=25, buffer=10, cap=20.
 
 ## Pending validation
 - Primera auditoría formal con `budget-auditor` (una vez instalado en B9), a demanda, después del primer `session_end` en modo auto de este repo — sirve como validación del sistema completo (bootstrap + logging + gating) en un caso real.
@@ -38,3 +39,4 @@ Sin datos suficientes todavía (1 solo actual no-null: B1=1 punto; B2 excluido p
 - repo-trust local: C:\Users\pablo\OneDrive\Documentos\GitHub\repo-trust ya tiene el protocolo aplicado sobre sí mismo y su propio references/SPEC.md — ese es el target de diff de B7, no Downloads.
 - Snapshot vivo y confirmado (session_id coincide), modo auto desde B3. Ventana 5h resetió ~14:40 local; usar remaining actual del snapshot para el próximo go/no-go.
 - Orquestador: Sonnet 5 (verificado en vivo). Fable capado al 95% del límite semanal esta semana — no relevante mientras el orquestador sea Sonnet/Opus.
+- Sesión cerrada 2026-07-04T15:04:33-0300 por user_cut (no budget_gate ni limit_hit) con 3 bloques hechos (B1, B2, B3). Próximo bloque: B4a (preflight §0 + tabla §0.3 de REPO_TRUST_SPEC, hilo principal, needs 2 confirmaciones del usuario).
