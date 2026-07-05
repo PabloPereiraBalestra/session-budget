@@ -12,7 +12,27 @@ pasa a **Shipped** citando la versión de spec y el commit.
 
 ## Propuestas
 <!-- idea nueva, sin triage todavía -->
-(vacío — triage completo 2026-07-05, ver Aceptadas/Descartadas)
+- **Asignador de tokens entre proyectos activos (portfolio-level).** Propuesto por el
+  usuario 2026-07-05. Una funcionalidad que ayude a decidir cómo distribuir los tokens
+  del plan entre los proyectos activos: qué proyecto recibe la próxima ventana, con qué
+  modelo y con qué esfuerzo. Hoy session-budget optimiza dentro de un proyecto; esta
+  capa optimiza entre proyectos, cruzando (a) el backlog de cada uno (bloques
+  [DESIGN]/[MECHANICAL] pendientes y sus tamaños, de cada SESSION_STATE.md), (b) la
+  calibración de costo por modelo de cada budget_log.jsonl, (c) el estado de todos los
+  límites (five_hour, seven_day, semanal por modelo, allowances tipo ultrareview) y
+  (d) prioridades/deadlines declarados por el usuario. Output tipo: "Fable expira en
+  2,5h con 90% libre → quemalo en los [DESIGN] del proyecto X a effort high; los
+  [MECHANICAL] de Y van a sonnet effort medium; Z puede esperar al reset semanal".
+  Caso real que la motiva: la decisión de hoy sobre dónde gastar el Fable semanal
+  expirante se hizo a mano en la conversación. Encaja con la directiva de apps
+  externas: puede ser un dashboard/script fuera de Claude Code que lea los repos con
+  el protocolo instalado + el snapshot. Abierto: dónde vive (¿registro de proyectos
+  activos en ~/.claude/ leído por cualquier sesión, skill separada, o app externa?);
+  de dónde salen los límites semanales por modelo que el snapshot no expone (¿input
+  manual del usuario, o scrape de la página de usage de claude.ai?); el protocolo hoy
+  no logea effort por bloque — ¿agregar campo "effort" al schema de block lines (el
+  snapshot ya expone effort.level) para poder calibrar costo por (size, model,
+  effort)?; y cómo captura prioridades entre proyectos sin volverse un PM tool.
 
 ## Aceptadas
 <!-- confirmadas por el usuario, esperando entrar a un backlog de sesión -->
