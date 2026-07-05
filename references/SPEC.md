@@ -1,6 +1,6 @@
 # Session Budget System — Implementation Spec
 
-**Version: v14 (2026-07-04).** The canonical copy of this file is `references/SPEC.md` in the `session-budget` skill repo. Per-project installs (the CLAUDE.md protocol section, and any local spec copy a project may keep) are derived and get resynced from there (see §0.1 version sync rule). Upgrading the system = editing this file in the skill repo, bumping the version, committing, then resuming affected projects.
+**Version: v15 (2026-07-05).** The canonical copy of this file is `references/SPEC.md` in the `session-budget` skill repo. Per-project installs (the CLAUDE.md protocol section, and any local spec copy a project may keep) are derived and get resynced from there (see §0.1 version sync rule). Upgrading the system = editing this file in the skill repo, bumping the version, committing, then resuming affected projects.
 
 Token-budget-aware planning for Claude Code: work is split into atomic blocks, each block's session cost is measured against the plan's 5-hour rate limit, and execution stops cleanly before spilling into extra usage. The system self-installs, self-measures, and self-tunes.
 
@@ -102,6 +102,7 @@ Insert into the project's `CLAUDE.md` between literal marker comments. If the ma
   {"t":"block","ts":"<ISO local>","tag":"<DESIGN|MECHANICAL>","size":"<S|M|L>","model":"<model.display_name from snapshot>","est":<points>,"actual":<end_pct - start_pct>,"start_pct":<n>,"end_pct":<n>,"commit":"<hash>","clean":<true|false>}
   In manual mode (no usable snapshot): model from session context, actual/start_pct/end_pct = null.
   If a block spans a session reset (resets_at changed between the start and end reads, or end_pct < start_pct), log actual=null and add "spans_reset":true; a cross-reset delta is never a valid actual. This includes blocks paused on an external blocker and resumed in a later window.
+  If other account activity ran while the block executed (parallel Claude Code window, claude.ai chat, or Cowork session — known to the orchestrator or reported by the user), add "parallel":true: the 5h pool is account-wide, so the block's measured actual includes that activity's consumption and must not feed calibration.
 - Corrections are append-only lines too: {"t":"correction","ref":"<commit or ts of the corrected line>","set":{"<field>":<value>}}. Self-tuning and reports apply the latest correction referencing a line before using it. Never rewrite or delete the original line.
   clean=false if the block later needed a revert or fix commit; record by appending {"t":"fix","ref":"<commit>"}, never by editing.
 - On every session close (any reason), append:
@@ -178,7 +179,7 @@ Create `~/.claude/agents/budget-auditor.md` only if absent (personal scope, shar
 ```markdown
 ---
 name: budget-auditor
-description: Audits a project's actual compliance with the session-budget protocol — logging schema, calibration exclusions, gating, and the spec's §6 success criteria — using only that project's on-disk artifacts (budget_log.jsonl, SESSION_STATE.md, git commits). Invoke on demand, never automatically on session_end. Must run blind to whoever executed the audited blocks: the invoking prompt must not describe what happened, only point at the files and commit range to read.
+description: Audits a project's actual compliance with the session-budget protocol — logging schema, calibration exclusions, gating, and the spec's §6 success criteria — using only that project's on-disk artifacts (budget_log.jsonl, SESSION_STATE.md, git commits). Invoke on demand, never automatically on session_end. Must run blind to whoever executed the audited blocks — the invoking prompt must not describe what happened, only point at the files and commit range to read.
 model: sonnet
 ---
 You audit the session-budget protocol for one project, using exactly three sources: the full `budget_log.jsonl`, `SESSION_STATE.md`, and the git commits the audited session references. Nothing else — no conversation history, no other files, no assumption about what "probably" happened during the session. A SESSION_STATE.md claim with no backing commit or log line is unverified, not true.
@@ -295,7 +296,7 @@ Interpretation: estimation variance never goes to zero (an unexpected bug can bl
 
 ## 7. Scope
 
-Implement only what this spec defines (statusline script or wrapper, settings merge, CLAUDE.md marked section, SESSION_STATE.md, budget_log.jsonl, implementer subagent). Do not refactor unrelated config, do not add hooks, monitors, or extra tooling. When done: list files created/modified, acceptance test results, and any deviation from spec with its reason.
+Implement only the deliverables §1 defines (§1.1–§1.6), so this list never drifts from §1 when a deliverable is added. Do not refactor unrelated config, do not add hooks, monitors, or extra tooling. When done: list files created/modified, acceptance test results, and any deviation from spec with its reason.
 
 ---
 
