@@ -2,6 +2,7 @@
 {"t":"block","ts":"2026-07-04T14:49:03-0300","tag":"MECHANICAL","size":"S","model":"Sonnet 5","est":5,"actual":null,"start_pct":58,"end_pct":9,"commit":"6e7a450","clean":true,"spans_reset":true}
 {"t":"block","ts":"2026-07-04T15:04:33-0300","tag":"MECHANICAL","size":"M","model":"Sonnet 5","est":12,"actual":1,"start_pct":9,"end_pct":10,"commit":"af48c95","clean":true}
 {"t":"session_end","ts":"2026-07-04T15:04:33-0300","end_pct":10,"cut_reason":"user_cut","blocks_done":3,"buffer":10,"cap":20,"mode":"auto"}
+{"t":"session_end","ts":"2026-07-04T19:08:15-03:00","end_pct":null,"cut_reason":"user_cut","blocks_done":0,"buffer":10,"cap":20,"mode":"manual"}
 {"t":"block","ts":"2026-07-04T22:41:51+00:00","tag":"DESIGN","size":"S","model":"Sonnet 5","est":5,"actual":null,"start_pct":null,"end_pct":null,"commit":null,"clean":true}
 {"t":"block","ts":"2026-07-04T22:41:51+00:00","tag":"MECHANICAL","size":"S","model":"Sonnet 5","est":5,"actual":null,"start_pct":null,"end_pct":null,"commit":"84c0e0d","clean":true}
 {"t":"session_end","ts":"2026-07-04T23:25:50+00:00","end_pct":null,"cut_reason":"user_cut","blocks_done":2,"buffer":10,"cap":20,"mode":"manual"}
