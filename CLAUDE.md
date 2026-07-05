@@ -30,6 +30,12 @@
 - If the plan source is ambiguous or the named plan file is absent/outdated, identify candidates from the repo (plan files, recent commits, CLAUDE.md references), state the evidence, and confirm the source with the user before planning. Never plan from a file just because a prompt named it.
 - Checkpoint, session-close and resume reports follow the fixed templates in §5.1 of the session-budget spec (references/SPEC.md in the skill repo): schematic, emoji legend, prose only for what the template can't carry.
 
+### Parallel lanes (conditioned)
+- Only once calibration has produced ≥10 non-null actuals across logged blocks (the phase the Self-tuning second-order rules also gate on) — below that threshold, run blocks one at a time regardless of what's eligible below.
+- Eligible lanes: pending [MECHANICAL] blocks whose dependencies are already completed AND whose file scope is disjoint from every other eligible lane in the same batch (no two lanes touch the same file). [DESIGN] blocks are never batched — they stay one at a time in the main thread per the existing rule.
+- Gate: sum the estimates of every lane in the batch (never the max — the 5h pool is shared even though wall-clock is parallelized) and apply the existing go/no-go rule to that sum + buffer.
+- Delegate each lane to its own implementer subagent invocation. The orchestrator reads the snapshot once before and once after the whole batch (not per lane) and logs one block line per lane, each flagged "parallel":true — concurrent consumption from the shared pool must never feed calibration, same as any other parallel account activity.
+
 ### Metrics logging
 - After completing each block, append one line to budget_log.jsonl (project root, append-only). Capture the real local timestamp before composing the line, never a placeholder. Never edit past lines and never rewrite the file to fix one; if an appended line came out wrong, append a corrective line referencing it instead:
   {"t":"block","ts":"<ISO local>","tag":"<DESIGN|MECHANICAL>","size":"<S|M|L>","model":"<model.display_name from snapshot>","effort":"<effort.level from snapshot, omit if unavailable>","est":<points>,"actual":<end_pct - start_pct>,"start_pct":<n>,"end_pct":<n>,"commit":"<hash>","clean":<true|false>}
