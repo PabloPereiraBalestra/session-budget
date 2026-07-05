@@ -1,6 +1,6 @@
 # Session Budget System — Implementation Spec
 
-**Version: v18 (2026-07-05).** The canonical copy of this file is `references/SPEC.md` in the `session-budget` skill repo. Per-project installs (the CLAUDE.md protocol section, and any local spec copy a project may keep) are derived and get resynced from there (see §0.1 version sync rule). Upgrading the system = editing this file in the skill repo, bumping the version, committing, then resuming affected projects.
+**Version: v19 (2026-07-05).** The canonical copy of this file is `references/SPEC.md` in the `session-budget` skill repo. Per-project installs (the CLAUDE.md protocol section, and any local spec copy a project may keep) are derived and get resynced from there (see §0.1 version sync rule). Upgrading the system = editing this file in the skill repo, bumping the version, committing, then resuming affected projects.
 
 Token-budget-aware planning for Claude Code: work is split into atomic blocks, each block's session cost is measured against the plan's 5-hour rate limit, and execution stops cleanly before spilling into extra usage. The system self-installs, self-measures, and self-tunes.
 
@@ -23,6 +23,7 @@ Verify each deliverable of §1 exists:
 | `budget_log.jsonl` | exists at project root |
 | `.claude/agents/implementer.md` | exists with `model: sonnet` frontmatter |
 | `~/.claude/agents/budget-auditor.md` | exists with `model: sonnet` frontmatter (user-level, shared across every project) |
+| `~/.claude/allowances.json` | file exists (null fields are pending user input, not errors) |
 
 If ANY item is missing: the first block of the plan is **B0 [MECHANICAL, M, 12] — bootstrap**: implement every missing §1 deliverable, run the §4 acceptance tests, and show SESSION_STATE.md for approval before committing. The current session runs on manual checkpoints (the snapshot cannot exist or be trusted yet).
 
@@ -82,9 +83,17 @@ Insert into the project's `CLAUDE.md` between literal marker comments. If the ma
 ### Budget tracking
 - Before starting each work block and after finishing it, read ~/.claude/usage_snapshot.json (Windows: %USERPROFILE%\.claude\usage_snapshot.json) and record rate_limits.five_hour.used_percentage in SESSION_STATE.md (session % start/end per block).
 - S/M/L are calibration buckets with default estimates S=5, M=12, L=25 session points. Point estimates may be any integer (8, 15, etc.); the bucket only determines which median applies during self-tuning. Defaults are overridden by measured data per the Self-tuning section.
-- Go/no-go rule: if (100 - current used_percentage) < estimated cost of next block + 10 buffer, do NOT start it. Leave the repo stable, update SESSION_STATE.md, and report: "No budget for next block. Session resets at <resets_at converted to local time>."
+- Go/no-go rule: if (100 - current used_percentage) < estimated cost of next block + 10 buffer, do NOT start it. Leave the repo stable, update SESSION_STATE.md, and report: "No budget for next block. Session resets at <resets_at converted to local time>." If resets_at is less than 30 minutes away, also say so and recommend waiting for the reset to start on a full window instead of closing the session.
 - No block may be estimated above 20 points. L placeholders above the cap may sit in the backlog marked SPLIT, but must be split into sub-blocks ≤ cap before entering any session plan.
-- If the snapshot file is missing, stale, or rate_limits is null (happens right after session start or /clear), say so and fall back to manual checkpoints: stop after each block and wait for my go. Staleness check: if the payload includes session_id (present in current builds, see §2 of the session-budget spec, references/SPEC.md in the skill repo), match it against the current session's id; otherwise treat a last-write time predating this session's first prompt as stale. When in doubt, stale.
+- If the snapshot file is missing, stale, or rate_limits is null (happens right after session start or /clear), say so and fall back to manual checkpoints: stop after each block and wait for my go. Staleness check: if the payload includes session_id (present in current builds, see §2 of the session-budget spec, references/SPEC.md in the skill repo), match it against the current session's id; a mismatching id is stale only if the write also predates this session's first prompt — a later write from another live window of this account is fresh (rate_limits are account-wide) but signals parallel activity: treat the snapshot as usable and flag blocks "parallel":true while it persists. Otherwise treat a last-write time predating this session's first prompt as stale. When in doubt, stale.
+
+### Allowance pacing
+- The 5h gate is one instance of a general goal: every account allowance (five_hour and seven_day from the snapshot; billing-cycle allowances the snapshot does not expose, like ultrareview free runs, from ~/.claude/allowances.json) should end its cycle near 100% used without work ever hitting a wall.
+- At every resume and block checkpoint (never mid-block, never unprompted between them), compute each cycle's elapsed fraction (from its reset time and known cycle length) and project final usage linearly: projected = used% × (cycle length / elapsed time).
+- Waste alert: if ≥70% of the cycle has elapsed and projected usage at reset is <60%, say so and propose how to consume the margin before it expires: pull forward cheap [MECHANICAL] blocks, run a budget-auditor audit, spend remaining ultrareview free runs.
+- Wall alert (seven_day only; five_hour is already gated per block): if projected usage reaches 100% before the cycle resets, recommend sonnet as main-thread model and defer heavy [DESIGN] work past the reset.
+- ~/.claude/allowances.json registers allowances the snapshot does not expose (schema in §1.7 of the session-budget spec, references/SPEC.md in the skill repo). Update `used` when a run is observed. While `used` or `resets` is null, ask the user once per resume to fill them; never guess and never alert from null data.
+- Per-model weekly caps are not in the snapshot either; when the user reports one (e.g. "90% of Fable free until 19:00"), treat it as an allowances.json-style cycle for pacing and model-choice decisions.
 
 ### Work block protocol
 - Blocks are atomic: each one ends in a stable state (compiles, tests pass, clean commit). Never leave work half-done.
@@ -99,8 +108,8 @@ Insert into the project's `CLAUDE.md` between literal marker comments. If the ma
 
 ### Metrics logging
 - After completing each block, append one line to budget_log.jsonl (project root, append-only). Capture the real local timestamp before composing the line, never a placeholder. Never edit past lines and never rewrite the file to fix one; if an appended line came out wrong, append a corrective line referencing it instead:
-  {"t":"block","ts":"<ISO local>","tag":"<DESIGN|MECHANICAL>","size":"<S|M|L>","model":"<model.display_name from snapshot>","est":<points>,"actual":<end_pct - start_pct>,"start_pct":<n>,"end_pct":<n>,"commit":"<hash>","clean":<true|false>}
-  In manual mode (no usable snapshot): model from session context, actual/start_pct/end_pct = null.
+  {"t":"block","ts":"<ISO local>","tag":"<DESIGN|MECHANICAL>","size":"<S|M|L>","model":"<model.display_name from snapshot>","effort":"<effort.level from snapshot, omit if unavailable>","est":<points>,"actual":<end_pct - start_pct>,"start_pct":<n>,"end_pct":<n>,"commit":"<hash>","clean":<true|false>}
+  In manual mode (no usable snapshot): model from session context, actual/start_pct/end_pct = null. "effort" records the main thread's effort level at block close; calibration buckets remain (size, model) — the field only accumulates data for a possible future split by effort.
   If a block spans a session reset (resets_at changed between the start and end reads, or end_pct < start_pct), log actual=null and add "spans_reset":true; a cross-reset delta is never a valid actual. This includes blocks paused on an external blocker and resumed in a later window.
   If other account activity ran while the block executed (parallel Claude Code window, claude.ai chat, or Cowork session — known to the orchestrator or reported by the user), add "parallel":true: the 5h pool is account-wide, so the block's measured actual includes that activity's consumption and must not feed calibration.
   If `commit` would be null outside manual mode, that's only valid when the block's deliverable lives entirely outside any git working tree (e.g., an install-if-absent file under `~/.claude/`). In that case the line must also carry a "note" field explaining why, and must never be backfilled with an unrelated block's commit hash as a stand-in.
@@ -197,6 +206,18 @@ Report as a short table: check, pass/fail, evidence. If the spec itself should c
 
 Trigger: on demand only, integrated into the §5 Budget report prompt. No auto-trigger on `session_end` (the worst moment to spend pool; after a `limit_hit` the opportunity doesn't even exist).
 
+### 1.7 Allowances registry (user-level)
+
+Create `~/.claude/allowances.json` only if absent:
+
+```json
+{
+  "ultrareview": { "quota": 3, "used": null, "resets": null, "cycle": "billing-month" }
+}
+```
+
+One key per allowance the snapshot does not expose. `used`/`resets` start null: the protocol asks the user to fill them at resume while null, and never alerts from null data. Deliberately plain JSON at user scope so tools outside Claude Code (scheduled watchers, portfolio-level allocators) can read and update it; the protocol itself touches it only at resume and block checkpoints — in-session checks are structurally blind while no session runs, and the external watcher that would cover that gap is out of this spec's scope (tracked in the skill repo's IMPROVEMENTS.md).
+
 ---
 
 ## 2. stdin JSON reference
@@ -248,6 +269,7 @@ Run all, report results:
 8. **Idempotency**: run the full installation a second time → zero diffs (no duplicated CLAUDE.md section, settings unchanged, state/log files untouched).
 9. After restart, the live statusline renders and the snapshot's timestamp updates after a real assistant response.
 10. `~/.claude/agents/budget-auditor.md` has valid frontmatter including `model: sonnet` and `name: budget-auditor`, and re-running the install a second time produces zero diff (install-if-absent).
+11. `~/.claude/allowances.json` parses as valid JSON with an `ultrareview` key, and re-running the install leaves an existing file byte-identical (install-if-absent).
 
 **Mandatory cleanup after tests 1-8:** delete `~/.claude/usage_snapshot.json`. The tests fill it with mock data; if it survives, the first post-restart resume can mistake mock percentages for a live budget. It regenerates on the first live render (test 9).
 
