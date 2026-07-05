@@ -4,7 +4,10 @@ Backlog source: bloques acordados en esta conversación (bootstrap del repo sess
 
 ## Pending blocks
 <!-- ordered by dependency: [TAG] size est_points — description | dep -->
-- [MECHANICAL] S 5 — B7: empaquetar repo-trust como skill en ~/.claude/skills/repo-trust (SKILL.md + references/SPEC.md). No commitea en este repo, escribe fuera. Test de diff byte a byte contra C:\Users\pablo\OneDrive\Documentos\GitHub\repo-trust\references\SPEC.md (NO contra Downloads — Downloads dejó de ser fuente para REPO_TRUST_SPEC también). Delegado a implementer. Ejecuta en la máquina local del usuario (Windows) — este entorno remoto no tiene ese filesystem; ver nota abajo. | dep: ninguno (ya cumplido)
+(vacío — backlog planificado completo; ver nota de gap de spec abajo)
+
+## Backlog gap (no bloqueante, para el próximo ciclo de spec)
+- `commit:null` no está contemplado por §1.2 fuera de modo manual. B7 (abajo) escribe únicamente en `~/.claude/skills/`, fuera de cualquier repo git — no va a existir nunca un commit para ese bloque, ni en modo auto ni manual. Mismo hueco que ultrareview encontró en B8 (ver corrección en budget_log.jsonl). Propuesta pendiente: formalizar en §1.2 un valor explícito para "sin target de commit" (p.ej. `"commit":null` permitido cuando el deliverable es fuera de cualquier working tree, documentado con un campo `note`), en vez de dejarlo ambiguo. No se resuelve acá para no expandir el scope de B7 ni de B10 en caliente.
 
 ## In progress
 (none)
@@ -20,11 +23,12 @@ Backlog source: bloques acordados en esta conversación (bootstrap del repo sess
 - [DESIGN] S — B8: contrato del subagente `budget-auditor` redactado y confirmado por el usuario. Ubicación de scope personal (`~/.claude/agents/`) verificada contra la doc oficial de subagents, no asumida; precedencia proyecto>usuario confirmada. Restricciones a-e todas satisfechas (nombre distintivo, model:sonnet, contrato de 3 fuentes, independencia estructural vía context window propio del subagente, trigger a demanda sin auto-trigger en session_end). | commit n/a (diseño, sin cambios de archivo) | session % n/a (modo manual) | actual null
 - [MECHANICAL] S — B9: `~/.claude/agents/budget-auditor.md` instalado (creado desde cero, no existía); spec bumpeado a v14 (§0.1 tabla, nuevo §1.6, test §4-10, prompt de Budget report §5 actualizado). Delegado a implementer, diff verificado por el orquestador. | commit 84c0e0d | session % n/a (modo manual) | actual null
 - [MECHANICAL] S — B10: fixes del ultrareview de PR #2 aplicados, spec bumpeado a v15: (1) frontmatter YAML del template budget-auditor §1.6 corregido (`: ` ilegal en scalar plano, verificado con PyYAML) e instalado corregido en `~/.claude/agents/` local (test §4-10 verde); (2) regla setter de `"parallel":true` agregada a §1.2 Metrics logging + CLAUDE.md resincronizado; (3) línea de corrección en budget_log.jsonl para el commit:null de B8; (4) §7 Scope ahora referencia §1 en vez de enumerar. Ejecutado en main thread (surgió de la conversación de review, no del backlog planificado) — desviación del ruteo a implementer, anotada. | commit 0e3ea1d | session % 42→45 | actual 3 puntos
+- [MECHANICAL] S — B7: repo-trust empaquetado como skill personal en `~/.claude/skills/repo-trust/` (SKILL.md + references/SPEC.md), copiados byte a byte desde `C:\Users\pablo\OneDrive\Documentos\GitHub\repo-trust\`. Delegado a implementer; orquestador verificó independientemente con `diff` + confirmó ambos repos (session-budget, repo-trust) sin cambios de git. Skill ya visible en la lista de skills activos de la sesión. | commit null (deliverable fuera de cualquier working tree — ver Backlog gap arriba) | session % 47→52 | actual 5 puntos
 
 ## Cost calibration
 <!-- medians by (size, model) from budget_log.jsonl, e.g. S/Sonnet=4, M/Sonnet=9, M/Fable=14 -->
 <!-- defaults when no data: S=5 M=12 L=25 | current buffer=10 cap=20 -->
-Sin datos suficientes todavía (2 actuales no-null: B1=1, B3=1; B2 excluido por spans_reset). Se sigue con defaults S=5 M=12 L=25, buffer=10, cap=20.
+Sin datos suficientes todavía (4 actuales no-null: B1=1, B3=1, B10=3, B7=5; B2 excluido por spans_reset). Se sigue con defaults S=5 M=12 L=25, buffer=10, cap=20.
 
 ## Pending validation
 - `budget-auditor` ya está instalado (B9, commit 84c0e0d) y ambos repos ya cumplen la precondición (primer `session_end` en modo auto: session-budget `user_cut` @15:04:33; repo-trust `work_done` @13:12:00). Primera auditoría formal: a demanda, vía el prompt de Budget report (§5) — todavía no ejecutada.
