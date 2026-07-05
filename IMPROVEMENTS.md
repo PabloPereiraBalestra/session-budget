@@ -34,12 +34,6 @@ pasa a **Shipped** citando la versión de spec y el commit.
   semántica del gate, solo el reporte — si al momento del no-go faltan <30 min para
   `resets_at`, recomendar esperar y arrancar con ventana llena en vez de cerrar.
   Viaja dentro del bump del monitor de allowances. → bloque B15 [DESIGN].
-- **Guardarraíles de calibración.** Aprobado 2026-07-05. Resuelto: un bucket necesita
-  ≥3 actuals no-null para pisar el default (debajo, sigue la cadena de fallback);
-  actuals=0 cuentan siempre (la mediana los absorbe) y quedan prohibidas las
-  exclusiones discrecionales (caso B11). Urgente: con la regla literal actual,
-  M/Sonnet quedaría calibrado en 1 punto con n=1 — riesgo directo de limit_hit.
-  → bloque B14 [DESIGN], primero del backlog.
 - **Reportes esquemáticos con emoticones.** Aprobado 2026-07-05. Resuelto: templates
   fijos por tipo de reporte (checkpoint de bloque, cierre de sesión, resume) en un
   §5.1 nuevo, prescriptivo en la spec (no a criterio del orquestador, para que no
@@ -67,4 +61,7 @@ pasa a **Shipped** citando la versión de spec y el commit.
 
 ## Shipped
 <!-- idea + versión de spec donde se incorporó + commit -->
-(vacío)
+- **Guardarraíles de calibración** — spec v18, commit c5e5c7f (B14, 2026-07-05). Un
+  bucket necesita ≥3 actuals calificados para pisar el nivel de fallback inferior;
+  actuals=0 cuentan siempre; parallel/spans_reset son las únicas exclusiones válidas
+  (sin drops discrecionales).
