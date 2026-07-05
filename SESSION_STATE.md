@@ -4,7 +4,7 @@ Backlog source: IMPROVEMENTS.md §Aceptadas (triage confirmado por el usuario el
 
 ## Pending blocks
 <!-- ordered by dependency: [TAG] size est_points — description | dep -->
-- [DESIGN] S 5 — B17: spec v21 — lanes paralelos condicionados: elegibilidad ([MECHANICAL], deps completadas, alcance disjunto), gate por lote = suma de estimados + buffer, "parallel":true por línea, habilitado solo con ≥10 actuals no-null de calibración. Resync CLAUDE.md. | dep: conceptual con B15 (es la acción de su alerta de desperdicio), va último — inactivo hasta que madure la calibración.
+(vacío — B14-B17 completo)
 
 ## In progress
 (none)
@@ -31,6 +31,8 @@ Backlog source: IMPROVEMENTS.md §Aceptadas (triage confirmado por el usuario el
 
 - [DESIGN] S — B16: spec bumpeado a v20, texto aprobado por el usuario antes del commit. §5.1 nuevo: templates prescriptivos de reporte (checkpoint de bloque, cierre de sesión, resume) con leyenda de emojis ✅⚠️🛑🔄📉📈⏸️, + línea vinculante en §1.2 Work block protocol. CLAUDE.md resincronizado, verificado byte a byte (56 líneas). Antes del bloque, admin: correcciones parallel B13/B14 (ac9355d), lectura de la cuenta vía Chrome (usage page) y llenado de ~/.claude/allowances.json con datos con evidencia (ultrareview 1/3, resets 2026-08-01). | commit d2e87f9 | session % 35→36 | actual 1 punto
 
+- [DESIGN] S — B17: spec bumpeado a v21, texto aprobado por el usuario antes del commit. Nueva subsección "Parallel lanes (conditioned)" en Work block protocol: lotes de [MECHANICAL] independientes (deps completadas, alcance de archivos disjunto) pueden correr en paralelo vía invocaciones separadas de implementer, gateados por la SUMA de estimados del lote (no el máximo) + buffer, cada línea de log flageada "parallel":true. Hard-gate en ≥10 actuals no-null calificados — hoy hay 7, la feature queda escrita pero dormida por diseño (mismo umbral que las reglas de segundo orden de Self-tuning). Último bloque del backlog B14-B17. CLAUDE.md resincronizado, verificado byte a byte (62 líneas). | commit cd82142 | session % 36→39 | actual 3 puntos
+
 ## Cost calibration
 <!-- medians by (size, model) from budget_log.jsonl, e.g. S/Sonnet=4, M/Sonnet=9, M/Fable=14 -->
 <!-- defaults when no data: S=5 M=12 L=25 | current buffer=10 cap=20 -->
@@ -48,11 +50,10 @@ Fase de calibración todavía (6 actuals calificados: B1=1, B3=1, B10=3, B7=5, B
 - Al retomar esta sesión se detectó que otra sesión/máquina había avanzado el backlog de repo-trust bajo su propia numeración (preflight, resolve, deliverables, tests, push, release v0.1.0+SBOM) sin reflejarlo acá. B4a-B6 se movieron a Completado arriba, referenciando los commits reales del repo repo-trust. También se resincronizó el CLAUDE.md de repo-trust, que había quedado desactualizado contra §1.2 de este spec (v13) desde su B0 — ver SESSION_STATE.md de repo-trust, sección "Version sync". No se encontró el commit 479fb2b mencionado como referencia de un import externo ("initium"); no existe en el historial de ninguno de los dos repos — pendiente de aclarar con el usuario si corresponde a otro repo.
 
 ## Minimal context to resume
-- Repo canónico del spec: references/SPEC.md v17 (commit 15e13e1); CLAUDE.md sincronizado byte a byte desde B12.
-- Backlog vigente: B14-B17 (bumps de spec v18-v21, aprobados por el usuario 2026-07-05; diseño resuelto de cada uno en IMPROVEMENTS.md §Aceptadas).
-- Los 4 bloques son [DESIGN]: el texto del bump se muestra al usuario antes de commitear (precedente B12), y cada bump resincroniza CLAUDE.md en el mismo commit (§0.1).
-- B15 (monitor de allowances) requiere input del usuario al ejecutar: fecha del ciclo de facturación y corridas gratis de ultrareview ya usadas.
-- Calibración: fase inicial (7 actuals no-null), defaults vigentes; excepción razonada: [DESIGN] de brainstorming/triage en Fable ≈15 puntos (evidencia B13).
-- repo-trust: aplicación completa y empaquetado como skill personal en ~/.claude/skills/repo-trust (B7). Sin pendientes ahí.
-- Snapshot local operativo en esta máquina Windows (modo auto); entornos cloud/remotos siguen siendo modo manual estructural (sin statusline).
-- IMPROVEMENTS.md: Propuestas vacío tras el triage; ideas nuevas futuras entran ahí antes de tocar el backlog.
+- B14-B17 completos (spec v18→v21, commits c5e5c7f/0882c85/d2e87f9/cd82142). references/SPEC.md v21 es el canónico; CLAUDE.md sincronizado byte a byte en cada bump.
+- Backlog planificado vacío. IMPROVEMENTS.md §Propuestas tiene 2 ideas sin triagear: (1) guard de ciclo transcurrido para la alerta de pared del monitor de allowances (falso positivo detectado en dogfooding de B15-B16), (2) asignador de tokens entre proyectos activos (portfolio-level) propuesto por el usuario. Cualquiera de las dos puede ser la fuente del próximo backlog — confirmar con el usuario antes de planificar.
+- allowances.json operativo con datos evidenciados: ultrareview 1/3 usadas, resets 2026-08-01. Corregir "used" si el usuario corrió otra ultrareview no reflejada.
+- Hallazgo de cuenta (vía Chrome, no accionable desde el protocolo): usage credits activados, $376.47 gastados este ciclo (resets Aug 1), límite mensual "Unlimited". El derrame a crédito pago es silencioso — cada limit_hit evitado por este protocolo es ahorro real, no solo tiempo. Pendiente del usuario: revisar si el gasto fue intencional y considerar poner un tope con "Adjust limit".
+- Calibración: 8 actuals calificados (B1,B3,B10,B7,B11,B12,B16,B17 — B13/B14/B15 excluidos por parallel). S/Sonnet=2 (n=4), S/Fable n=1 → fall through a size-only S=3 (n=6), M/Sonnet n=1 → default M=12, L=25. Buffer=10, cap=20. Faltan 2 actuals calificados para habilitar lanes paralelos (umbral ≥10).
+- Reportes desde B16 usan los templates §5.1 (checkpoint/cierre/resume esquemáticos con emojis) — seguir usándolos en la próxima sesión.
+- Orquestador de este cierre: Sonnet 5 (cambiado de Fable a mitad de sesión, tras detectar que Fable semanal no estaba realmente por vencer — el "2,5h" que reportó el usuario era el reset de la ventana de 5h, no el semanal).
