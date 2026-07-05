@@ -12,33 +12,58 @@ pasa a **Shipped** citando la versión de spec y el commit.
 
 ## Propuestas
 <!-- idea nueva, sin triage todavía -->
-- **Paralelizar bloques independientes cuando el uso está bajo.** Si el % usado de la
-  ventana de 5h es bajo y el backlog tiene varios bloques sin dependencia entre sí (ver
-  el orden por dependencia en `SESSION_STATE.md`), evaluar correrlos en paralelo (varios
-  subagentes/lanes a la vez) en vez de uno a la vez, para aprovechar el margen.
-  Cuidado: el pool de 5h es account-wide — si el usuario tiene otros proyectos o
-  sesiones corriendo en paralelo (otra ventana de Claude Code, claude.ai, Cowork), esos
-  consumen del mismo presupuesto y hay que seguir marcando `"parallel":true` en cada
-  línea de log afectada (regla ya existente en §1.2). Abierto: cómo detectar "hay
-  múltiples lanes ejecutables" (¿todas las [MECHANICAL] sin dependencia pendiente
-  entre sí?) y cuánto margen de uso alcanza para justificar paralelizar sin arriesgar
-  el go/no-go de los bloques restantes.
-- **Reportes más esquemáticos, con formato y emoticones.** Los reportes del protocolo
-  (resumen de bloque, cierre de sesión, "Budget report" de §5) hoy son texto corrido en
-  prosa. Pasarlos a un formato tabular/esquemático fijo (bullets o tabla: bloque, tag,
-  tamaño, % inicio→fin, estado) con emoticones como señal visual rápida (✅ bloque
-  limpio, ⚠️ trending over estimate, 🛑 no-go, 🔄 spans_reset) para escanear el estado
-  de un vistazo. Abierto: definir el template exacto por tipo de reporte (checkpoint de
-  bloque vs. cierre de sesión vs. resume) y si esto vive en §5 del spec como formato
-  prescriptivo o queda a criterio del orquestador.
+(vacío — triage completo 2026-07-05, ver Aceptadas/Descartadas)
 
 ## Aceptadas
 <!-- confirmadas por el usuario, esperando entrar a un backlog de sesión -->
-(vacío)
+- **Monitor unificado de allowances** (fusiona 4 propuestas: recordatorio ultrareview,
+  aviso de límite por vencer sin usar, gate/pacing semanal `seven_day`, quemar margen
+  que expira). Aprobado 2026-07-05. Diseño resuelto: una sola mecánica (ciclo, tiempo
+  a reset, % usado, proyección lineal usado-vs-transcurrido) sobre N límites;
+  `five_hour`/`seven_day` desde el snapshot (costo extra cero, ya se lee en cada
+  checkpoint), ultrareview desde registro manual `~/.claude/allowances.json`
+  (`{"ultrareview":{"quota":3,"used":n,"resets":"<fecha ciclo facturación>"}}` — el
+  usuario declara la fecha una vez, el orquestador incrementa `used` al observar una
+  corrida). Alertas: *desperdicio* (transcurrido ≥70% del ciclo y proyección <60% al
+  reset → sugerir consumir: adelantar MECHANICAL baratos, auditoría budget-auditor,
+  corridas gratis de ultrareview pendientes) y *pared* (solo seven_day: proyección
+  ≥100% antes del reset → recomendar orquestador sonnet, diferir DESIGN pesados).
+  Frecuencia: solo resume y checkpoints, nunca proactivo mid-bloque. Incluye el no-go
+  consciente del reset (abajo). → bloque B15 [DESIGN].
+- **No-go consciente del reset.** Aprobado 2026-07-05. Resuelto: no cambia la
+  semántica del gate, solo el reporte — si al momento del no-go faltan <30 min para
+  `resets_at`, recomendar esperar y arrancar con ventana llena en vez de cerrar.
+  Viaja dentro del bump del monitor de allowances. → bloque B15 [DESIGN].
+- **Guardarraíles de calibración.** Aprobado 2026-07-05. Resuelto: un bucket necesita
+  ≥3 actuals no-null para pisar el default (debajo, sigue la cadena de fallback);
+  actuals=0 cuentan siempre (la mediana los absorbe) y quedan prohibidas las
+  exclusiones discrecionales (caso B11). Urgente: con la regla literal actual,
+  M/Sonnet quedaría calibrado en 1 punto con n=1 — riesgo directo de limit_hit.
+  → bloque B14 [DESIGN], primero del backlog.
+- **Reportes esquemáticos con emoticones.** Aprobado 2026-07-05. Resuelto: templates
+  fijos por tipo de reporte (checkpoint de bloque, cierre de sesión, resume) en un
+  §5.1 nuevo, prescriptivo en la spec (no a criterio del orquestador, para que no
+  derive entre modelos/sesiones). Leyenda: ✅ limpio, ⚠️ trending over, 🛑 no-go,
+  🔄 spans_reset, 📉 margen ocioso, 📈 riesgo de pared. → bloque B16 [DESIGN].
+- **Paralelizar bloques independientes cuando el uso está bajo.** Aprobado 2026-07-05
+  con condiciones. Resuelto: lanes elegibles = [MECHANICAL] con dependencias
+  completadas y alcance de archivos disjunto; gate por lote = suma de estimados de
+  todos los lanes + buffer (nunca el máximo: el pool es compartido, la concurrencia
+  divide el tiempo de pared, no el costo); cada línea de log lleva `"parallel":true`
+  (fuera de calibración, regla existente). Condición dura: habilitado solo con fase
+  de calibración completa (≥10 actuals no-null) — paralelizar sacrifica dato de
+  calibración a cambio de throughput; hoy (6 actuals) no se activaría. Encaja como
+  acción de la alerta de desperdicio del monitor. → bloque B17 [DESIGN], último
+  (inactivo hasta que madure la calibración).
 
 ## Descartadas
 <!-- idea + motivo, para no reabrir sin contexto nuevo -->
-(vacío)
+- **Historial de uso (serie temporal, `usage_history.jsonl` desde el statusline).**
+  Descartada 2026-07-05: el proxy usado-vs-transcurrido (con `resets_at` + largo de
+  ciclo conocido) cubre el pacing sin tocar el statusline ni gestionar throttle y
+  rotación de archivos. Condición de reapertura explícita: si la proyección lineal
+  resulta insuficiente en la práctica (consumo muy a ráfagas que la proyección
+  malinterpreta), se reabre con esa evidencia.
 
 ## Shipped
 <!-- idea + versión de spec donde se incorporó + commit -->
