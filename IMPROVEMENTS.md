@@ -36,24 +36,6 @@ pasa a **Shipped** citando la versión de spec y el commit.
 
 ## Aceptadas
 <!-- confirmadas por el usuario, esperando entrar a un backlog de sesión -->
-- **Monitor unificado de allowances** (fusiona 4 propuestas: recordatorio ultrareview,
-  aviso de límite por vencer sin usar, gate/pacing semanal `seven_day`, quemar margen
-  que expira). Aprobado 2026-07-05. Diseño resuelto: una sola mecánica (ciclo, tiempo
-  a reset, % usado, proyección lineal usado-vs-transcurrido) sobre N límites;
-  `five_hour`/`seven_day` desde el snapshot (costo extra cero, ya se lee en cada
-  checkpoint), ultrareview desde registro manual `~/.claude/allowances.json`
-  (`{"ultrareview":{"quota":3,"used":n,"resets":"<fecha ciclo facturación>"}}` — el
-  usuario declara la fecha una vez, el orquestador incrementa `used` al observar una
-  corrida). Alertas: *desperdicio* (transcurrido ≥70% del ciclo y proyección <60% al
-  reset → sugerir consumir: adelantar MECHANICAL baratos, auditoría budget-auditor,
-  corridas gratis de ultrareview pendientes) y *pared* (solo seven_day: proyección
-  ≥100% antes del reset → recomendar orquestador sonnet, diferir DESIGN pesados).
-  Frecuencia: solo resume y checkpoints, nunca proactivo mid-bloque. Incluye el no-go
-  consciente del reset (abajo). → bloque B15 [DESIGN].
-- **No-go consciente del reset.** Aprobado 2026-07-05. Resuelto: no cambia la
-  semántica del gate, solo el reporte — si al momento del no-go faltan <30 min para
-  `resets_at`, recomendar esperar y arrancar con ventana llena en vez de cerrar.
-  Viaja dentro del bump del monitor de allowances. → bloque B15 [DESIGN].
 - **Reportes esquemáticos con emoticones.** Aprobado 2026-07-05. Resuelto: templates
   fijos por tipo de reporte (checkpoint de bloque, cierre de sesión, resume) en un
   §5.1 nuevo, prescriptivo en la spec (no a criterio del orquestador, para que no
@@ -81,6 +63,13 @@ pasa a **Shipped** citando la versión de spec y el commit.
 
 ## Shipped
 <!-- idea + versión de spec donde se incorporó + commit -->
+- **Monitor unificado de allowances** — spec v19, commit 0882c85 (B15, 2026-07-05).
+  Fusionó 4 propuestas (recordatorio ultrareview, aviso de límite por vencer,
+  gate/pacing semanal, quemar margen que expira) en la subsección "Allowance pacing"
+  de §1.2 + deliverable §1.7 `~/.claude/allowances.json`. Incluyó de yapa: no-go
+  consciente del reset (<30 min), campo `effort` en el schema de block lines, y fix
+  de staleness para writes de otra ventana viva de la cuenta.
+- **No-go consciente del reset** — spec v19, commit 0882c85 (B15, 2026-07-05).
 - **Guardarraíles de calibración** — spec v18, commit c5e5c7f (B14, 2026-07-05). Un
   bucket necesita ≥3 actuals calificados para pisar el nivel de fallback inferior;
   actuals=0 cuentan siempre; parallel/spans_reset son las únicas exclusiones válidas
