@@ -1,6 +1,6 @@
 # Session Budget System — Implementation Spec
 
-**Version: v17 (2026-07-05).** The canonical copy of this file is `references/SPEC.md` in the `session-budget` skill repo. Per-project installs (the CLAUDE.md protocol section, and any local spec copy a project may keep) are derived and get resynced from there (see §0.1 version sync rule). Upgrading the system = editing this file in the skill repo, bumping the version, committing, then resuming affected projects.
+**Version: v18 (2026-07-05).** The canonical copy of this file is `references/SPEC.md` in the `session-budget` skill repo. Per-project installs (the CLAUDE.md protocol section, and any local spec copy a project may keep) are derived and get resynced from there (see §0.1 version sync rule). Upgrading the system = editing this file in the skill repo, bumping the version, committing, then resuming affected projects.
 
 Token-budget-aware planning for Claude Code: work is split into atomic blocks, each block's session cost is measured against the plan's 5-hour rate limit, and execution stops cleanly before spilling into extra usage. The system self-installs, self-measures, and self-tunes.
 
@@ -112,7 +112,7 @@ Insert into the project's `CLAUDE.md` between literal marker comments. If the ma
   limit_hit = the 5h limit interrupted work mid-block. budget_gate = the go/no-go rule stopped us. work_done = backlog empty.
 
 ### Self-tuning
-- On every resume, before planning: read the last 30 lines of budget_log.jsonl. Recalibrate each (size, model) estimate as the MEDIAN of its last 5 non-null actuals, excluding lines flagged "parallel":true or "spans_reset":true (they stay in the log for reporting, but never feed calibration). Fallback order: (size, model) → size-only median → defaults. Write the result to the Cost calibration section of SESSION_STATE.md. Silent, no announcement needed.
+- On every resume, before planning: read the last 30 lines of budget_log.jsonl. Recalibrate each (size, model) estimate as the MEDIAN of its last 5 non-null actuals, excluding lines flagged "parallel":true or "spans_reset":true (they stay in the log for reporting, but never feed calibration). A bucket's median overrides the fallback level below it only once the bucket has ≥3 qualifying actuals; with fewer, fall through. Fallback order: (size, model) → size-only median (same ≥3 rule) → defaults. actual=0 lines are qualifying data like any other (with n≥3 the median absorbs them); the two flags above are the ONLY valid exclusions — never drop a line from calibration by judgment call. Write the result to the Cost calibration section of SESSION_STATE.md. Silent, no announcement needed.
 - Second-order rules, only once the log has ≥10 block entries with non-null actuals (before that: calibration phase, first-order only):
   - If any of the last 3 sessions ended in limit_hit: set buffer=15 and cap=15. Announce in one line.
   - If the last 3 sessions all ended in budget_gate with end_pct < 75: set cap=12 to force finer granularity. Announce in one line.
