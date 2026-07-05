@@ -18,3 +18,4 @@
 {"t":"block","ts":"2026-07-05T17:50:05-03:00","tag":"DESIGN","size":"M","model":"Fable 5","effort":"high","est":12,"actual":17,"start_pct":6,"end_pct":23,"commit":"0882c85","clean":true,"parallel":true}
 {"t":"correction","ref":"2026-07-05T15:16:04-03:00","set":{"parallel":true},"note":"user confirmed the repo-trust Fable session was active during B13; actual includes its consumption, excluded from calibration"}
 {"t":"correction","ref":"2026-07-05T16:38:23-03:00","set":{"parallel":true},"note":"same parallel repo-trust session active during B14"}
+{"t":"block","ts":"2026-07-05T19:11:27-03:00","tag":"DESIGN","size":"S","model":"Fable 5","effort":"high","est":5,"actual":1,"start_pct":35,"end_pct":36,"commit":"d2e87f9","clean":true}
