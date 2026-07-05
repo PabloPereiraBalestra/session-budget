@@ -13,3 +13,4 @@
 {"t":"block","ts":"2026-07-05T01:01:30-0300","tag":"MECHANICAL","size":"S","model":"Sonnet 5","est":5,"actual":0,"start_pct":2,"end_pct":2,"commit":"0dee485","clean":true}
 {"t":"block","ts":"2026-07-05T04:02:54-0300","tag":"DESIGN","size":"S","model":"Sonnet 5","est":5,"actual":3,"start_pct":11,"end_pct":14,"commit":"15e13e1","clean":true}
 {"t":"session_end","ts":"2026-07-05T11:37:43-0300","end_pct":16,"cut_reason":"work_done","blocks_done":4,"buffer":10,"cap":20,"mode":"auto"}
+{"t":"block","ts":"2026-07-05T15:16:04-03:00","tag":"DESIGN","size":"S","model":"Fable 5","est":5,"actual":16,"start_pct":22,"end_pct":38,"commit":"2652889","clean":true}
