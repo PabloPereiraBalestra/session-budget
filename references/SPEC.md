@@ -1,6 +1,6 @@
 # Session Budget System — Implementation Spec
 
-**Version: v16 (2026-07-05).** The canonical copy of this file is `references/SPEC.md` in the `session-budget` skill repo. Per-project installs (the CLAUDE.md protocol section, and any local spec copy a project may keep) are derived and get resynced from there (see §0.1 version sync rule). Upgrading the system = editing this file in the skill repo, bumping the version, committing, then resuming affected projects.
+**Version: v17 (2026-07-05).** The canonical copy of this file is `references/SPEC.md` in the `session-budget` skill repo. Per-project installs (the CLAUDE.md protocol section, and any local spec copy a project may keep) are derived and get resynced from there (see §0.1 version sync rule). Upgrading the system = editing this file in the skill repo, bumping the version, committing, then resuming affected projects.
 
 Token-budget-aware planning for Claude Code: work is split into atomic blocks, each block's session cost is measured against the plan's 5-hour rate limit, and execution stops cleanly before spilling into extra usage. The system self-installs, self-measures, and self-tunes.
 
@@ -26,7 +26,7 @@ Verify each deliverable of §1 exists:
 
 If ANY item is missing: the first block of the plan is **B0 [MECHANICAL, M, 12] — bootstrap**: implement every missing §1 deliverable, run the §4 acceptance tests, and show SESSION_STATE.md for approval before committing. The current session runs on manual checkpoints (the snapshot cannot exist or be trusted yet).
 
-**Version sync rule:** if the CLAUDE.md section between the markers differs from §1.2 of this file (the skill repo's `references/SPEC.md`), resync it from here (this file wins) as part of the preflight, no approval needed, and announce it in one line with the spec version. Never edit the CLAUDE.md section directly; changes go to this file first.
+**Version sync rule:** if the CLAUDE.md section between the markers differs from §1.2 of this file (the skill repo's `references/SPEC.md`), resync it from here (this file wins) as part of the preflight, no approval needed, and announce it in one line with the spec version. Never edit the CLAUDE.md section directly; changes go to this file first. Any commit that bumps this file's version must resync every tracked `CLAUDE.md` install in the same commit or a directly coupled one; if that isn't possible immediately, the commit message and `SESSION_STATE.md` must say so explicitly — drift like an unresynced `CLAUDE.md` section must never go unnoticed.
 
 ### 0.2 Environment check
 
@@ -103,7 +103,9 @@ Insert into the project's `CLAUDE.md` between literal marker comments. If the ma
   In manual mode (no usable snapshot): model from session context, actual/start_pct/end_pct = null.
   If a block spans a session reset (resets_at changed between the start and end reads, or end_pct < start_pct), log actual=null and add "spans_reset":true; a cross-reset delta is never a valid actual. This includes blocks paused on an external blocker and resumed in a later window.
   If other account activity ran while the block executed (parallel Claude Code window, claude.ai chat, or Cowork session — known to the orchestrator or reported by the user), add "parallel":true: the 5h pool is account-wide, so the block's measured actual includes that activity's consumption and must not feed calibration.
-- Corrections are append-only lines too: {"t":"correction","ref":"<commit or ts of the corrected line>","set":{"<field>":<value>}}. Self-tuning and reports apply the latest correction referencing a line before using it. Never rewrite or delete the original line.
+  If `commit` would be null outside manual mode, that's only valid when the block's deliverable lives entirely outside any git working tree (e.g., an install-if-absent file under `~/.claude/`). In that case the line must also carry a "note" field explaining why, and must never be backfilled with an unrelated block's commit hash as a stand-in.
+  If two or more blocks close in the same wrap-up and a distinct real per-block timestamp is unrecoverable, do not let the lines share an identical timestamp silently — mark the affected line(s) "ts_approximate":true.
+- Corrections are append-only lines too: {"t":"correction","ref":"<commit or ts of the corrected line>","set":{"<field>":<value>}}. `set` must contain at least one field to change. Self-tuning and reports apply the latest correction referencing a line before using it. Never rewrite or delete the original line. A rationale-only annotation that changes no field is not a correction — use {"t":"note","ref":"<commit or ts of the referenced line>","text":"<explanation>"} instead.
   clean=false if the block later needed a revert or fix commit; record by appending {"t":"fix","ref":"<commit>"}, never by editing.
 - On every session close (any reason), append:
   {"t":"session_end","ts":"<ISO local>","end_pct":<n|null>,"cut_reason":"<budget_gate|user_cut|limit_hit|work_done>","blocks_done":<n>,"buffer":<n>,"cap":<n>,"mode":"<auto|manual>"}
