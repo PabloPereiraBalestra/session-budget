@@ -1,6 +1,6 @@
 # Session Budget System — Implementation Spec
 
-**Version: v20 (2026-07-05).** The canonical copy of this file is `references/SPEC.md` in the `session-budget` skill repo. Per-project installs (the CLAUDE.md protocol section, and any local spec copy a project may keep) are derived and get resynced from there (see §0.1 version sync rule). Upgrading the system = editing this file in the skill repo, bumping the version, committing, then resuming affected projects.
+**Version: v21 (2026-07-05).** The canonical copy of this file is `references/SPEC.md` in the `session-budget` skill repo. Per-project installs (the CLAUDE.md protocol section, and any local spec copy a project may keep) are derived and get resynced from there (see §0.1 version sync rule). Upgrading the system = editing this file in the skill repo, bumping the version, committing, then resuming affected projects.
 
 Token-budget-aware planning for Claude Code: work is split into atomic blocks, each block's session cost is measured against the plan's 5-hour rate limit, and execution stops cleanly before spilling into extra usage. The system self-installs, self-measures, and self-tunes.
 
@@ -106,6 +106,12 @@ Insert into the project's `CLAUDE.md` between literal marker comments. If the ma
 - On each resume, after computing the window plan, recommend the main-thread model and effort for this window: sonnet for admin or MECHANICAL-heavy windows, opus at high effort only when the window contains genuinely hard [DESIGN] blocks. State it in one line; the user switches with /model and /effort.
 - If the plan source is ambiguous or the named plan file is absent/outdated, identify candidates from the repo (plan files, recent commits, CLAUDE.md references), state the evidence, and confirm the source with the user before planning. Never plan from a file just because a prompt named it.
 - Checkpoint, session-close and resume reports follow the fixed templates in §5.1 of the session-budget spec (references/SPEC.md in the skill repo): schematic, emoji legend, prose only for what the template can't carry.
+
+### Parallel lanes (conditioned)
+- Only once calibration has produced ≥10 non-null actuals across logged blocks (the phase the Self-tuning second-order rules also gate on) — below that threshold, run blocks one at a time regardless of what's eligible below.
+- Eligible lanes: pending [MECHANICAL] blocks whose dependencies are already completed AND whose file scope is disjoint from every other eligible lane in the same batch (no two lanes touch the same file). [DESIGN] blocks are never batched — they stay one at a time in the main thread per the existing rule.
+- Gate: sum the estimates of every lane in the batch (never the max — the 5h pool is shared even though wall-clock is parallelized) and apply the existing go/no-go rule to that sum + buffer.
+- Delegate each lane to its own implementer subagent invocation. The orchestrator reads the snapshot once before and once after the whole batch (not per lane) and logs one block line per lane, each flagged "parallel":true — concurrent consumption from the shared pool must never feed calibration, same as any other parallel account activity.
 
 ### Metrics logging
 - After completing each block, append one line to budget_log.jsonl (project root, append-only). Capture the real local timestamp before composing the line, never a placeholder. Never edit past lines and never rewrite the file to fix one; if an appended line came out wrong, append a corrective line referencing it instead:
