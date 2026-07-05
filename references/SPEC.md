@@ -1,6 +1,6 @@
 # Session Budget System — Implementation Spec
 
-**Version: v19 (2026-07-05).** The canonical copy of this file is `references/SPEC.md` in the `session-budget` skill repo. Per-project installs (the CLAUDE.md protocol section, and any local spec copy a project may keep) are derived and get resynced from there (see §0.1 version sync rule). Upgrading the system = editing this file in the skill repo, bumping the version, committing, then resuming affected projects.
+**Version: v20 (2026-07-05).** The canonical copy of this file is `references/SPEC.md` in the `session-budget` skill repo. Per-project installs (the CLAUDE.md protocol section, and any local spec copy a project may keep) are derived and get resynced from there (see §0.1 version sync rule). Upgrading the system = editing this file in the skill repo, bumping the version, committing, then resuming affected projects.
 
 Token-budget-aware planning for Claude Code: work is split into atomic blocks, each block's session cost is measured against the plan's 5-hour rate limit, and execution stops cleanly before spilling into extra usage. The system self-installs, self-measures, and self-tunes.
 
@@ -105,6 +105,7 @@ Insert into the project's `CLAUDE.md` between literal marker comments. If the ma
 - [MECHANICAL] blocks are delegated to the `implementer` subagent (pinned to Sonnet in its frontmatter). The orchestrator reads the snapshot before and after the delegation and logs the block itself. [DESIGN] blocks run in the main thread.
 - On each resume, after computing the window plan, recommend the main-thread model and effort for this window: sonnet for admin or MECHANICAL-heavy windows, opus at high effort only when the window contains genuinely hard [DESIGN] blocks. State it in one line; the user switches with /model and /effort.
 - If the plan source is ambiguous or the named plan file is absent/outdated, identify candidates from the repo (plan files, recent commits, CLAUDE.md references), state the evidence, and confirm the source with the user before planning. Never plan from a file just because a prompt named it.
+- Checkpoint, session-close and resume reports follow the fixed templates in §5.1 of the session-budget spec (references/SPEC.md in the skill repo): schematic, emoji legend, prose only for what the template can't carry.
 
 ### Metrics logging
 - After completing each block, append one line to budget_log.jsonl (project root, append-only). Capture the real local timestamp before composing the line, never a placeholder. Never edit past lines and never rewrite the file to fix one; if an appended line came out wrong, append a corrective line referencing it instead:
@@ -300,6 +301,38 @@ Budget report (weekly, or whenever the system feels off):
 
 ```
 Reporte de presupuesto: leé budget_log.jsonl completo y mostrame en una tabla corta: cortes por tipo (limit_hit / budget_gate / user_cut / work_done), end_pct promedio en cortes por budget_gate, error mediano de estimación por (tamaño, modelo) con su dirección (sobre o subestimación), calibración vigente vs defaults, bloques con clean=false, y sesiones en modo manual. Contrastá contra los criterios de éxito del spec y si alguno no se cumple, proponé el ajuste con la evidencia del log. Si además querés una auditoría formal e independiente, pedime que invoque al subagente budget-auditor sobre este mismo log y SESSION_STATE.md.
+```
+
+### 5.1 Report templates (prescriptive)
+
+All protocol reports use these fixed schematic formats. Legend: ✅ clean/done, ⚠️ warning/trending over, 🛑 no-go/blocked, 🔄 spans_reset, 📉 waste alert, 📈 wall alert, ⏸️ waiting on user/reset. Prose only for what a template can't carry.
+
+**Block checkpoint** (after each block):
+
+```
+✅ B<n> [TAG] <size> — <one-line summary> | commit <hash>
+5h: <start>%→<end>% (est <e>, actual <a>)  ⚠️ if actual > est
+Pacing: ok | <one line per cycle whose alert fires>
+Next: B<m> (est <e>) → ✅ go | 🛑 no-go, resets <local time> (⏸️ wait if <30 min)
+Ctx: <n>%  (recommend /clear if ≥60)
+```
+
+**Session close** (accompanies the session_end log line):
+
+```
+🏁 <cut_reason> | <n> blocks: ✅ B.. ✅ B.. 🔄 B..
+5h at close: <n>% | resets <local time> | mode <auto|manual>
+Next: <first pending block, or "backlog empty">
+```
+
+**Resume** (after preflight):
+
+```
+Mode: <auto | manual (reason)> | 5h <n>% | 7d <n>% | ctx <n>%
+Calibration: <S=n M=n L=n | defaults> | buffer <n> | cap <n>
+Pacing: ok | <alerts> — Allowances: <ultrareview used/quota, resets <date> | fields to fill>
+Window plan: <k> blocks fit: <B.., B..>
+Model/effort: <one-line recommendation>
 ```
 
 ---
