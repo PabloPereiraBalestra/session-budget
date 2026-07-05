@@ -44,17 +44,6 @@ pasa a **Shipped** citando la versión de spec y el commit.
 
 ## Aceptadas
 <!-- confirmadas por el usuario, esperando entrar a un backlog de sesión -->
-- **Paralelizar bloques independientes cuando el uso está bajo.** Aprobado 2026-07-05
-  con condiciones. Resuelto: lanes elegibles = [MECHANICAL] con dependencias
-  completadas y alcance de archivos disjunto; gate por lote = suma de estimados de
-  todos los lanes + buffer (nunca el máximo: el pool es compartido, la concurrencia
-  divide el tiempo de pared, no el costo); cada línea de log lleva `"parallel":true`
-  (fuera de calibración, regla existente). Condición dura: habilitado solo con fase
-  de calibración completa (≥10 actuals no-null) — paralelizar sacrifica dato de
-  calibración a cambio de throughput; hoy (6 actuals) no se activaría. Encaja como
-  acción de la alerta de desperdicio del monitor. → bloque B17 [DESIGN], último
-  (inactivo hasta que madure la calibración).
-
 ## Descartadas
 <!-- idea + motivo, para no reabrir sin contexto nuevo -->
 - **Historial de uso (serie temporal, `usage_history.jsonl` desde el statusline).**
@@ -66,6 +55,11 @@ pasa a **Shipped** citando la versión de spec y el commit.
 
 ## Shipped
 <!-- idea + versión de spec donde se incorporó + commit -->
+- **Paralelizar bloques independientes** — spec v21, commit cd82142 (B17,
+  2026-07-05). Subsección "Parallel lanes (conditioned)": lanes elegibles
+  [MECHANICAL] con deps completadas + alcance disjunto, gate = suma de estimados del
+  lote + buffer, cada línea `"parallel":true`. Hard-gate en ≥10 actuals no-null
+  calificados (hoy 7 — feature dormida hasta que madure la calibración).
 - **Reportes esquemáticos con emoticones** — spec v20, commit d2e87f9 (B16,
   2026-07-05). §5.1 con templates prescriptivos (checkpoint, cierre, resume) y
   leyenda ✅⚠️🛑🔄📉📈⏸️, vinculante desde §1.2.
