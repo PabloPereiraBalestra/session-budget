@@ -12,3 +12,4 @@
 {"t":"correction","ref":"2026-07-05T00:37:52-0300","set":{},"note":"commit:null is correct here, not a data error: B7's deliverable (~/.claude/skills/repo-trust/) is outside any git working tree by design, so no commit will ever exist for this block. Same schema gap ultrareview flagged for B8 (commit:null outside the enumerated manual-mode-null fields) — flagged as a pending spec fix in SESSION_STATE rather than patched here mid-block."}
 {"t":"block","ts":"2026-07-05T01:01:30-0300","tag":"MECHANICAL","size":"S","model":"Sonnet 5","est":5,"actual":0,"start_pct":2,"end_pct":2,"commit":"0dee485","clean":true}
 {"t":"block","ts":"2026-07-05T04:02:54-0300","tag":"DESIGN","size":"S","model":"Sonnet 5","est":5,"actual":3,"start_pct":11,"end_pct":14,"commit":"15e13e1","clean":true}
+{"t":"session_end","ts":"2026-07-05T11:37:43-0300","end_pct":16,"cut_reason":"work_done","blocks_done":4,"buffer":10,"cap":20,"mode":"auto"}
