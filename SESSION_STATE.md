@@ -4,7 +4,6 @@ Backlog source: IMPROVEMENTS.md §Aceptadas (triage confirmado por el usuario el
 
 ## Pending blocks
 <!-- ordered by dependency: [TAG] size est_points — description | dep -->
-- [DESIGN] S 5 — B16: spec v20 — §5.1 templates prescriptivos de reporte con emojis (checkpoint de bloque, cierre de sesión, resume; leyenda ✅⚠️🛑🔄📉📈). Resync CLAUDE.md si el bump toca §1.2. | dep: ninguna.
 - [DESIGN] S 5 — B17: spec v21 — lanes paralelos condicionados: elegibilidad ([MECHANICAL], deps completadas, alcance disjunto), gate por lote = suma de estimados + buffer, "parallel":true por línea, habilitado solo con ≥10 actuals no-null de calibración. Resync CLAUDE.md. | dep: conceptual con B15 (es la acción de su alerta de desperdicio), va último — inactivo hasta que madure la calibración.
 
 ## In progress
@@ -29,6 +28,8 @@ Backlog source: IMPROVEMENTS.md §Aceptadas (triage confirmado por el usuario el
 - [DESIGN] S — B14: spec bumpeado a v18, texto aprobado por el usuario antes del commit. Guardarraíles de calibración en Self-tuning §1.2: un bucket necesita ≥3 actuals calificados para pisar el nivel de fallback inferior, actuals=0 cuentan siempre, parallel/spans_reset quedan como únicas exclusiones válidas (retira el patrón de exclusión discrecional de B11). CLAUDE.md resincronizado en el mismo commit, verificado byte a byte por script (47 líneas idénticas entre markers). | commit c5e5c7f | session % 47→63 | actual 16 puntos
 
 - [DESIGN] M — B15: spec bumpeado a v19, texto aprobado por el usuario antes del commit. Monitor unificado de allowances (subsección "Allowance pacing" en §1.2: proyección lineal usado-vs-transcurrido por ciclo, alerta desperdicio ≥70%/<60%, alerta pared seven_day, chequeo solo en resume/checkpoints) + §1.7 ~/.claude/allowances.json (creado install-if-absent, test §4-11 verde, campos null hasta que el usuario declare fecha de ciclo y corridas usadas) + no-go consciente del reset (<30 min) + campo "effort" en el schema de block lines + fix de staleness (write posterior de otra ventana viva = fresco + parallel). CLAUDE.md resincronizado, verificado byte a byte (55 líneas). Logeado parallel:true — sesión repo-trust activa en paralelo durante todo el bloque. | commit 0882c85 | session % 6→23 | actual 17 puntos (no alimenta calibración por parallel)
+
+- [DESIGN] S — B16: spec bumpeado a v20, texto aprobado por el usuario antes del commit. §5.1 nuevo: templates prescriptivos de reporte (checkpoint de bloque, cierre de sesión, resume) con leyenda de emojis ✅⚠️🛑🔄📉📈⏸️, + línea vinculante en §1.2 Work block protocol. CLAUDE.md resincronizado, verificado byte a byte (56 líneas). Antes del bloque, admin: correcciones parallel B13/B14 (ac9355d), lectura de la cuenta vía Chrome (usage page) y llenado de ~/.claude/allowances.json con datos con evidencia (ultrareview 1/3, resets 2026-08-01). | commit d2e87f9 | session % 35→36 | actual 1 punto
 
 ## Cost calibration
 <!-- medians by (size, model) from budget_log.jsonl, e.g. S/Sonnet=4, M/Sonnet=9, M/Fable=14 -->

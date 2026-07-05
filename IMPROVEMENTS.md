@@ -33,14 +33,17 @@ pasa a **Shipped** citando la versión de spec y el commit.
   no logea effort por bloque — ¿agregar campo "effort" al schema de block lines (el
   snapshot ya expone effort.level) para poder calibrar costo por (size, model,
   effort)?; y cómo captura prioridades entre proyectos sin volverse un PM tool.
+  Nota 2026-07-05: el campo "effort" ya shippeó en v19 (B15); el resto sigue abierto.
+- **Guard de ciclo transcurrido para la alerta de pared.** Detectado en el primer
+  dogfooding del monitor v19 (checkpoint de B15): la alerta de desperdicio exige
+  ≥70% de ciclo transcurrido, pero la de pared (seven_day proyección ≥100%) no tiene
+  guard equivalente — con 12% del ciclo transcurrido, un día atípico proyecta >100%
+  y dispara falsos positivos puro ruido. Abierto: umbral mínimo de ciclo transcurrido
+  para que la proyección de pared sea accionable (¿≥30%?), o suavizar la acción
+  recomendada cuando el ciclo es joven.
 
 ## Aceptadas
 <!-- confirmadas por el usuario, esperando entrar a un backlog de sesión -->
-- **Reportes esquemáticos con emoticones.** Aprobado 2026-07-05. Resuelto: templates
-  fijos por tipo de reporte (checkpoint de bloque, cierre de sesión, resume) en un
-  §5.1 nuevo, prescriptivo en la spec (no a criterio del orquestador, para que no
-  derive entre modelos/sesiones). Leyenda: ✅ limpio, ⚠️ trending over, 🛑 no-go,
-  🔄 spans_reset, 📉 margen ocioso, 📈 riesgo de pared. → bloque B16 [DESIGN].
 - **Paralelizar bloques independientes cuando el uso está bajo.** Aprobado 2026-07-05
   con condiciones. Resuelto: lanes elegibles = [MECHANICAL] con dependencias
   completadas y alcance de archivos disjunto; gate por lote = suma de estimados de
@@ -63,6 +66,9 @@ pasa a **Shipped** citando la versión de spec y el commit.
 
 ## Shipped
 <!-- idea + versión de spec donde se incorporó + commit -->
+- **Reportes esquemáticos con emoticones** — spec v20, commit d2e87f9 (B16,
+  2026-07-05). §5.1 con templates prescriptivos (checkpoint, cierre, resume) y
+  leyenda ✅⚠️🛑🔄📉📈⏸️, vinculante desde §1.2.
 - **Monitor unificado de allowances** — spec v19, commit 0882c85 (B15, 2026-07-05).
   Fusionó 4 propuestas (recordatorio ultrareview, aviso de límite por vencer,
   gate/pacing semanal, quemar margen que expira) en la subsección "Allowance pacing"
