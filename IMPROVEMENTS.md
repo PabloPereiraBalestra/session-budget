@@ -16,24 +16,20 @@ pasa a **Shipped** citando la versión de spec y el commit.
 
 ## Aceptadas
 <!-- confirmadas por el usuario, esperando entrar a un backlog de sesión -->
-- **Medición del "Fable fee"** (encargada por el usuario 2026-07-05, deadline 7/7).
-  Hallazgo documentado: dos agentes Fable (~200k tokens combinados) movieron el pool
-  de 5h de Sonnet solo 1 punto (62%→63%) — señal fuerte de que el consumo Fable corre
-  contra un espacio separado (Fable semanal) del que gatea el protocolo. Verificarlo
-  con medición controlada: instrumentar lectura de todos los medidores (snapshot +
-  página de usage vía Chrome), correr una carga Fable medida y una carga Sonnet de
-  control, comparar deltas por medidor. Si confirma → política "Fable lane" en spec:
-  delegar [MECHANICAL] a agentes Fable cuando Fable semanal tiene margen, capacidad
-  casi gratis para la ventana de 5h. → bloques B21, B23, B24, B25.
-- **Asignador de tokens entre proyectos activos** (movida de Propuestas 2026-07-05,
-  encargada por el usuario). Diseño a resolver en B22 con propuesta concreta para los
-  4 abiertos (script en ~/.claude/portfolio/ + projects.json, límites por modelo vía
-  Chrome persistidos en allowances.json, effort ya en el log desde v19, prioridades
-  como campo simple del registro). Implementación B23 (delegada a agente Fable como
-  carga medida del experimento de arriba — un bloque paga el experimento del otro).
-  → bloques B22, B23, B24.
+(vacío)
+
 ## Descartadas
 <!-- idea + motivo, para no reabrir sin contexto nuevo -->
+- **Política "Fable lane"** (delegar [MECHANICAL] a agentes Fable cuando el Fable
+  semanal tiene margen, asumiendo que es capacidad casi gratis para el pool de 5h).
+  Descartada 2026-07-06 tras el experimento medido B21-B24 (ver
+  `references/FABLE_FEE_FINDINGS.md`): en la comparación controlada, delegar a Fable
+  costó ~4x más five_hour por token que delegar a Sonnet (+11pts/62k tokens vs
+  +4pts/90k tokens) — la observación original que motivó la idea probablemente
+  confundía el pool de 5h con el Fable semanal (ese sí se movió solo con el agente
+  Fable, pero apenas +1pt). Condición de reapertura: una medición futura con más
+  muestras (mismo tipo de tarea en ambos modelos, distintos tamaños de bloque) que
+  muestre lo contrario.
 - **Historial de uso (serie temporal, `usage_history.jsonl` desde el statusline).**
   Descartada 2026-07-05: el proxy usado-vs-transcurrido (con `resets_at` + largo de
   ciclo conocido) cubre el pacing sin tocar el statusline ni gestionar throttle y
@@ -43,6 +39,16 @@ pasa a **Shipped** citando la versión de spec y el commit.
 
 ## Shipped
 <!-- idea + versión de spec donde se incorporó + commit -->
+- **Medición del "Fable fee"** — bloques B21-B24 (2026-07-06), commits f97f7f4
+  (script + baseline), bf1463d (diseño), b42b114 (implementación Fable), a3da96b
+  (control Sonnet). Resultado y recomendación en `references/FABLE_FEE_FINDINGS.md`
+  y en Descartadas de arriba. No generó bump de spec (la política que motivaba la
+  medición no se sostuvo).
+- **Asignador de tokens entre proyectos activos** — bloques B22-B24 (2026-07-06),
+  entregable en `~/.claude/portfolio/` (fuera de repo, mismo precedente que el skill
+  repo-trust de B7): `DESIGN.md`, `assign.ps1`, `projects.json`, `README.md`,
+  `tests/` (31/31 tests propios). No requirió bump de spec — vive fuera del schema
+  de este protocolo, es una herramienta de portfolio que lo consume.
 - **Reporte obligatorio de reglas de segundo orden + Cost calibration como fuente
   única** — spec v23, commit 756bb05 (B19, 2026-07-05). Propuesto por budget-auditor
   tras auditar 15e13e1..HEAD: el umbral de ≥10 actuals ya se había cruzado sin
