@@ -48,6 +48,11 @@ pasa a **Shipped** citando la versión de spec y el commit.
 
 ## Shipped
 <!-- idea + versión de spec donde se incorporó + commit -->
+- **Reporte obligatorio de reglas de segundo orden + Cost calibration como fuente
+  única** — spec v23, commit 756bb05 (B19, 2026-07-05). Propuesto por budget-auditor
+  tras auditar 15e13e1..HEAD: el umbral de ≥10 actuals ya se había cruzado sin
+  evaluar las 3 condiciones, y un recap paralelo en SESSION_STATE.md se había
+  desincronizado de la sección canónica.
 - **Guard de ciclo transcurrido para la alerta de pared** — spec v22, commit d0fbf32
   (B18, 2026-07-05). Umbral ≥25% de ciclo transcurrido antes de disparar, corrige el
   falso positivo del dogfooding B15-B16.
