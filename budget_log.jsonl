@@ -25,3 +25,4 @@
 {"t":"block","ts":"2026-07-05T20:35:00-03:00","tag":"DESIGN","size":"S","model":"Sonnet 5","effort":"high","est":5,"actual":8,"start_pct":2,"end_pct":10,"commit":"756bb05","clean":true}
 {"t":"block","ts":"2026-07-05T23:05:27-03:00","tag":"DESIGN","size":"S","model":"Sonnet 5","effort":"high","est":5,"actual":9,"start_pct":10,"end_pct":19,"commit":"a1e12c9","clean":true}
 {"t":"block","ts":"2026-07-05T23:52:00-03:00","tag":"MECHANICAL","size":"S","model":"Sonnet 5","effort":"high","est":5,"actual":1,"start_pct":25,"end_pct":26,"commit":"f97f7f4","clean":true}
+{"t":"block","ts":"2026-07-06T00:05:00-03:00","tag":"DESIGN","size":"M","model":"Sonnet 5","est":12,"actual":1,"start_pct":26,"end_pct":27,"commit":null,"clean":true,"parallel":true,"note":"B22 deliverable is ~/.claude/portfolio/DESIGN.md, outside any git working tree by design (portfolio-wide tool, same precedent as B7); no commit will ever exist for this block"}
