@@ -34,13 +34,6 @@ pasa a **Shipped** citando la versión de spec y el commit.
   snapshot ya expone effort.level) para poder calibrar costo por (size, model,
   effort)?; y cómo captura prioridades entre proyectos sin volverse un PM tool.
   Nota 2026-07-05: el campo "effort" ya shippeó en v19 (B15); el resto sigue abierto.
-- **Guard de ciclo transcurrido para la alerta de pared.** Detectado en el primer
-  dogfooding del monitor v19 (checkpoint de B15): la alerta de desperdicio exige
-  ≥70% de ciclo transcurrido, pero la de pared (seven_day proyección ≥100%) no tiene
-  guard equivalente — con 12% del ciclo transcurrido, un día atípico proyecta >100%
-  y dispara falsos positivos puro ruido. Abierto: umbral mínimo de ciclo transcurrido
-  para que la proyección de pared sea accionable (¿≥30%?), o suavizar la acción
-  recomendada cuando el ciclo es joven.
 
 ## Aceptadas
 <!-- confirmadas por el usuario, esperando entrar a un backlog de sesión -->
@@ -55,6 +48,9 @@ pasa a **Shipped** citando la versión de spec y el commit.
 
 ## Shipped
 <!-- idea + versión de spec donde se incorporó + commit -->
+- **Guard de ciclo transcurrido para la alerta de pared** — spec v22, commit d0fbf32
+  (B18, 2026-07-05). Umbral ≥25% de ciclo transcurrido antes de disparar, corrige el
+  falso positivo del dogfooding B15-B16.
 - **Paralelizar bloques independientes** — spec v21, commit cd82142 (B17,
   2026-07-05). Subsección "Parallel lanes (conditioned)": lanes elegibles
   [MECHANICAL] con deps completadas + alcance disjunto, gate = suma de estimados del
