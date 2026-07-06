@@ -1,6 +1,6 @@
 # Session Budget System — Implementation Spec
 
-**Version: v21 (2026-07-05).** The canonical copy of this file is `references/SPEC.md` in the `session-budget` skill repo. Per-project installs (the CLAUDE.md protocol section, and any local spec copy a project may keep) are derived and get resynced from there (see §0.1 version sync rule). Upgrading the system = editing this file in the skill repo, bumping the version, committing, then resuming affected projects.
+**Version: v22 (2026-07-05).** The canonical copy of this file is `references/SPEC.md` in the `session-budget` skill repo. Per-project installs (the CLAUDE.md protocol section, and any local spec copy a project may keep) are derived and get resynced from there (see §0.1 version sync rule). Upgrading the system = editing this file in the skill repo, bumping the version, committing, then resuming affected projects.
 
 Token-budget-aware planning for Claude Code: work is split into atomic blocks, each block's session cost is measured against the plan's 5-hour rate limit, and execution stops cleanly before spilling into extra usage. The system self-installs, self-measures, and self-tunes.
 
@@ -91,7 +91,7 @@ Insert into the project's `CLAUDE.md` between literal marker comments. If the ma
 - The 5h gate is one instance of a general goal: every account allowance (five_hour and seven_day from the snapshot; billing-cycle allowances the snapshot does not expose, like ultrareview free runs, from ~/.claude/allowances.json) should end its cycle near 100% used without work ever hitting a wall.
 - At every resume and block checkpoint (never mid-block, never unprompted between them), compute each cycle's elapsed fraction (from its reset time and known cycle length) and project final usage linearly: projected = used% × (cycle length / elapsed time).
 - Waste alert: if ≥70% of the cycle has elapsed and projected usage at reset is <60%, say so and propose how to consume the margin before it expires: pull forward cheap [MECHANICAL] blocks, run a budget-auditor audit, spend remaining ultrareview free runs.
-- Wall alert (seven_day only; five_hour is already gated per block): if projected usage reaches 100% before the cycle resets, recommend sonnet as main-thread model and defer heavy [DESIGN] work past the reset.
+- Wall alert (seven_day only; five_hour is already gated per block): if projected usage reaches 100% before the cycle resets, recommend sonnet as main-thread model and defer heavy [DESIGN] work past the reset. Requires ≥25% of the cycle elapsed before firing — lower than the waste alert's 70%, because acting on a wall risk early is more useful than acting late, but still enough to damp a single atypical day's noise in the linear projection (observed: at 12% elapsed a normal Fable-heavy day already projected >100%, a false positive).
 - ~/.claude/allowances.json registers allowances the snapshot does not expose (schema in §1.7 of the session-budget spec, references/SPEC.md in the skill repo). Update `used` when a run is observed. While `used` or `resets` is null, ask the user once per resume to fill them; never guess and never alert from null data.
 - Per-model weekly caps are not in the snapshot either; when the user reports one (e.g. "90% of Fable free until 19:00"), treat it as an allowances.json-style cycle for pacing and model-choice decisions.
 
