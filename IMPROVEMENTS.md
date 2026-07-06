@@ -42,8 +42,9 @@ pasa a **Shipped** citando la versión de spec y el commit.
 - **Medición del "Fable fee"** — bloques B21-B24 (2026-07-06), commits f97f7f4
   (script + baseline), bf1463d (diseño), b42b114 (implementación Fable), a3da96b
   (control Sonnet). Resultado y recomendación en `references/FABLE_FEE_FINDINGS.md`
-  y en Descartadas de arriba. No generó bump de spec (la política que motivaba la
-  medición no se sostuvo).
+  y en Descartadas de arriba. La política "Fable lane" que motivaba la medición no
+  se sostuvo, pero el usuario aprobó incluir el campo `agent_model` propuesto en el
+  informe → spec v24, commits 75e6c88/8b293d1.
 - **Asignador de tokens entre proyectos activos** — bloques B22-B24 (2026-07-06),
   entregable en `~/.claude/portfolio/` (fuera de repo, mismo precedente que el skill
   repo-trust de B7): `DESIGN.md`, `assign.ps1`, `projects.json`, `README.md`,
