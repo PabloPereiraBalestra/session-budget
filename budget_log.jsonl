@@ -24,3 +24,4 @@
 {"t":"block","ts":"2026-07-05T20:05:00-03:00","tag":"DESIGN","size":"S","model":"Sonnet 5","effort":"high","est":5,"actual":null,"start_pct":39,"end_pct":2,"commit":"d0fbf32","clean":true,"spans_reset":true}
 {"t":"block","ts":"2026-07-05T20:35:00-03:00","tag":"DESIGN","size":"S","model":"Sonnet 5","effort":"high","est":5,"actual":8,"start_pct":2,"end_pct":10,"commit":"756bb05","clean":true}
 {"t":"block","ts":"2026-07-05T23:05:27-03:00","tag":"DESIGN","size":"S","model":"Sonnet 5","effort":"high","est":5,"actual":9,"start_pct":10,"end_pct":19,"commit":"a1e12c9","clean":true}
+{"t":"block","ts":"2026-07-05T23:52:00-03:00","tag":"MECHANICAL","size":"S","model":"Sonnet 5","effort":"high","est":5,"actual":1,"start_pct":25,"end_pct":26,"commit":"f97f7f4","clean":true}
