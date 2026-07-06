@@ -4,7 +4,12 @@ Backlog source: IMPROVEMENTS.md §Aceptadas (triage confirmado por el usuario el
 
 ## Pending blocks
 <!-- ordered by dependency: [TAG] size est_points — description | dep -->
-(vacío — B14-B17 completo)
+<!-- DEADLINE: B21 y B23 deben correr antes del 7 de julio (fin de la disponibilidad Fable reportada por el usuario) -->
+- [MECHANICAL] S 5 — B21: instrumentación de medición "Fable fee": script de captura de medidores (usage_snapshot.json + lectura Chrome de la página de usage de claude.ai: 5h, 7d all-models, Fable semanal) + baseline registrado en fable_fee_log.jsonl (nuevo, raíz del repo, append-only, mismo espíritu que budget_log). | dep: ninguna. Corre en main thread (necesita Chrome).
+- [DESIGN] M 12 — B22: diseño del asignador de tokens de portfolio — resolver los 4 abiertos de IMPROVEMENTS.md: (1) dónde vive → propuesta: script PowerShell en ~/.claude/portfolio/ + registro projects.json (paths de proyectos activos, prioridad entera, deadline opcional), legible por sesiones y por herramientas externas (directiva del usuario); (2) límites semanales por modelo → lectura Chrome on-demand persistida en allowances.json (claves tipo "fable_weekly"); (3) effort → ya shippeado v19, el script lo lee del log; (4) prioridades → projects.json, sin PM tool. Output: recomendación de asignación (qué proyecto/bloques en esta ventana, con qué modelo y effort). Texto/interfaces aprobados por el usuario antes de commitear. | dep: ninguna. Main thread.
+- [MECHANICAL] M 12 — B23: implementar el asignador según diseño de B22 — DELEGADO A AGENTE FABLE (desviación de implementer/Sonnet autorizada por este plan: es la carga de trabajo medida del experimento Fable-fee). Orquestador lee TODOS los medidores (B21) antes y después, registra deltas en fable_fee_log.jsonl. | dep: B21, B22. ANTES DEL 7/7.
+- [MECHANICAL] S 5 — B24: tests de aceptación + docs del asignador — delegado a agente SONNET como corrida de control del experimento (mismo protocolo de medición antes/después). | dep: B23.
+- [DESIGN] S 5 — B25: informe de hallazgos Fable-fee (deltas B23 vs B24 vs la observación original ~200k/1pt) + si los datos confirman, bump de spec v24: política de delegación "Fable lane" para [MECHANICAL] cuando Fable semanal tiene margen (no consume el pool de 5h) + campo "agent_model" en el schema de block lines (hoy "model" solo captura el main thread). Texto aprobado por el usuario. | dep: B23, B24.
 
 ## In progress
 (none)

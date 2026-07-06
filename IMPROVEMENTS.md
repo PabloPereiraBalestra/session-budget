@@ -12,31 +12,26 @@ pasa a **Shipped** citando la versión de spec y el commit.
 
 ## Propuestas
 <!-- idea nueva, sin triage todavía -->
-- **Asignador de tokens entre proyectos activos (portfolio-level).** Propuesto por el
-  usuario 2026-07-05. Una funcionalidad que ayude a decidir cómo distribuir los tokens
-  del plan entre los proyectos activos: qué proyecto recibe la próxima ventana, con qué
-  modelo y con qué esfuerzo. Hoy session-budget optimiza dentro de un proyecto; esta
-  capa optimiza entre proyectos, cruzando (a) el backlog de cada uno (bloques
-  [DESIGN]/[MECHANICAL] pendientes y sus tamaños, de cada SESSION_STATE.md), (b) la
-  calibración de costo por modelo de cada budget_log.jsonl, (c) el estado de todos los
-  límites (five_hour, seven_day, semanal por modelo, allowances tipo ultrareview) y
-  (d) prioridades/deadlines declarados por el usuario. Output tipo: "Fable expira en
-  2,5h con 90% libre → quemalo en los [DESIGN] del proyecto X a effort high; los
-  [MECHANICAL] de Y van a sonnet effort medium; Z puede esperar al reset semanal".
-  Caso real que la motiva: la decisión de hoy sobre dónde gastar el Fable semanal
-  expirante se hizo a mano en la conversación. Encaja con la directiva de apps
-  externas: puede ser un dashboard/script fuera de Claude Code que lea los repos con
-  el protocolo instalado + el snapshot. Abierto: dónde vive (¿registro de proyectos
-  activos en ~/.claude/ leído por cualquier sesión, skill separada, o app externa?);
-  de dónde salen los límites semanales por modelo que el snapshot no expone (¿input
-  manual del usuario, o scrape de la página de usage de claude.ai?); el protocolo hoy
-  no logea effort por bloque — ¿agregar campo "effort" al schema de block lines (el
-  snapshot ya expone effort.level) para poder calibrar costo por (size, model,
-  effort)?; y cómo captura prioridades entre proyectos sin volverse un PM tool.
-  Nota 2026-07-05: el campo "effort" ya shippeó en v19 (B15); el resto sigue abierto.
+(vacío)
 
 ## Aceptadas
 <!-- confirmadas por el usuario, esperando entrar a un backlog de sesión -->
+- **Medición del "Fable fee"** (encargada por el usuario 2026-07-05, deadline 7/7).
+  Hallazgo documentado: dos agentes Fable (~200k tokens combinados) movieron el pool
+  de 5h de Sonnet solo 1 punto (62%→63%) — señal fuerte de que el consumo Fable corre
+  contra un espacio separado (Fable semanal) del que gatea el protocolo. Verificarlo
+  con medición controlada: instrumentar lectura de todos los medidores (snapshot +
+  página de usage vía Chrome), correr una carga Fable medida y una carga Sonnet de
+  control, comparar deltas por medidor. Si confirma → política "Fable lane" en spec:
+  delegar [MECHANICAL] a agentes Fable cuando Fable semanal tiene margen, capacidad
+  casi gratis para la ventana de 5h. → bloques B21, B23, B24, B25.
+- **Asignador de tokens entre proyectos activos** (movida de Propuestas 2026-07-05,
+  encargada por el usuario). Diseño a resolver en B22 con propuesta concreta para los
+  4 abiertos (script en ~/.claude/portfolio/ + projects.json, límites por modelo vía
+  Chrome persistidos en allowances.json, effort ya en el log desde v19, prioridades
+  como campo simple del registro). Implementación B23 (delegada a agente Fable como
+  carga medida del experimento de arriba — un bloque paga el experimento del otro).
+  → bloques B22, B23, B24.
 ## Descartadas
 <!-- idea + motivo, para no reabrir sin contexto nuevo -->
 - **Historial de uso (serie temporal, `usage_history.jsonl` desde el statusline).**
