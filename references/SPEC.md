@@ -287,26 +287,26 @@ Run all, report results:
 Kickoff (first session in a project, or whenever re-planning from scratch):
 
 ```
-Arrancamos con el protocolo "Session budget protocol".
+Starting the "Session budget protocol".
 
-0. Preflight (§0 del spec): verificá estado del sistema, entorno y auth. Si falta algún deliverable, B0 es el primer bloque y esta sesión corre por checkpoints manuales.
-1. Identificá la fuente del backlog: buscá archivos de plan en el repo, commits recientes y referencias en CLAUDE.md. Decime qué encontraste y confirmá conmigo cuál es la fuente antes de planificar. No asumas un nombre de archivo.
-2. Armá la lista de pendientes reales (lo planificado menos lo ya implementado) y reorganizala en bloques según el protocolo: atómicos, por dependencia, [DESIGN]/[MECHANICAL], S/M/L, ninguno arriba del cap.
-3. Si hay snapshot utilizable, calculá cuántos bloques entran en esta ventana con el buffer vigente. Si no, decilo y marcá la sesión como manual.
-4. Completá SESSION_STATE.md.
-5. Mostrame el plan con el corte propuesto y esperá mi OK antes de ejecutar nada.
+0. Preflight (spec §0): check system state, environment, and auth. If any deliverable is missing, B0 is the first block and this session runs on manual checkpoints.
+1. Identify the backlog source: look for plan files in the repo, recent commits, and references in CLAUDE.md. Tell me what you found and confirm the source with me before planning. Don't assume a file name.
+2. Build the real pending list (what's planned minus what's already implemented) and reorganize it into blocks per the protocol: atomic, ordered by dependency, [DESIGN]/[MECHANICAL], S/M/L, none above the cap.
+3. If a usable snapshot exists, calculate how many blocks fit in this window with the current buffer. If not, say so and mark the session as manual.
+4. Fill in SESSION_STATE.md.
+5. Show me the plan with the proposed cutoff and wait for my OK before executing anything.
 ```
 
 Resume (every new window, after `/clear`):
 
 ```
-Retomamos según protocolo. Corré el preflight (§0), leé SESSION_STATE.md y el snapshot. Confirmame en 3 líneas: modo (auto o manual y por qué), próximo bloque con costo estimado, y cuántos bloques entran en esta ventana. Con mi OK, ejecutá.
+Resuming per protocol. Run the preflight (§0), read SESSION_STATE.md and the snapshot. Confirm in 3 lines: mode (auto or manual and why), next block with estimated cost, and how many blocks fit in this window. With my OK, execute.
 ```
 
 Budget report (weekly, or whenever the system feels off):
 
 ```
-Reporte de presupuesto: leé budget_log.jsonl completo y mostrame en una tabla corta: cortes por tipo (limit_hit / budget_gate / user_cut / work_done), end_pct promedio en cortes por budget_gate, error mediano de estimación por (tamaño, modelo) con su dirección (sobre o subestimación), calibración vigente vs defaults, bloques con clean=false, y sesiones en modo manual. Contrastá contra los criterios de éxito del spec y si alguno no se cumple, proponé el ajuste con la evidencia del log. Si además querés una auditoría formal e independiente, pedime que invoque al subagente budget-auditor sobre este mismo log y SESSION_STATE.md.
+Budget report: read the full budget_log.jsonl and show me a short table: cuts by type (limit_hit / budget_gate / user_cut / work_done), average end_pct on budget_gate cuts, median estimation error by (size, model) with its direction (over- or under-estimation), current calibration vs defaults, blocks with clean=false, and sessions in manual mode. Compare against the spec's success criteria and if any isn't met, propose the adjustment with log evidence. If you also want a formal, independent audit, ask me to invoke the budget-auditor subagent over this same log and SESSION_STATE.md.
 ```
 
 ### 5.1 Report templates (prescriptive)
@@ -379,7 +379,7 @@ Draft SKILL.md frontmatter (description in third person per official guidance; t
 ```yaml
 ---
 name: session-budget
-description: This skill should be used when the user wants token-budget-aware planning in Claude Code - splitting a backlog into atomic blocks gated against the 5-hour plan limit, self-installing the measurement system, and self-tuning estimates from logged data. Trigger on "presupuesto de sesión", "session budget", "planificar por bloques", "no pasarme del límite", or requests to work within plan limits without spilling into extra usage.
+description: This skill should be used when the user wants token-budget-aware planning in Claude Code - splitting a backlog into atomic blocks gated against the 5-hour plan limit, self-installing the measurement system, and self-tuning estimates from logged data. Trigger on "session budget", "session-based planning", "plan in blocks", "don't go over my limit", "presupuesto de sesión", "planificar por bloques", "no pasarme del límite", or requests to work within plan limits without spilling into extra usage.
 ---
 Run the preflight in references/SPEC.md §0, then follow the spec. Keep this body short; the spec is the source of truth.
 ```

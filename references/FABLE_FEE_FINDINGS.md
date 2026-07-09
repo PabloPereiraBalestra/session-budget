@@ -1,91 +1,92 @@
-# Hallazgos del experimento Fable-fee (B21-B24)
+# Fable-fee experiment findings (B21-B24)
 
-Informe de B25. Datos crudos en `fable_fee_log.jsonl` (raíz del repo, 5 lecturas:
+B25 report. Raw data in `fable_fee_log.jsonl` (repo root, 5 readings:
 `baseline`, `pre_b23`, `post_b23`, `pre_b24`, `post_b24`).
 
-## Motivación
+## Motivation
 
-`IMPROVEMENTS.md` registraba una observación informal: "dos agentes Fable (~200k
-tokens combinados) movieron el pool de 5h de Sonnet solo 1 punto (62%→63%)". Si eso
-fuera representativo, delegar bloques [MECHANICAL] a agentes Fable cuando el Fable
-semanal tiene margen sería capacidad casi gratis para la ventana de 5h — de ahí la
-idea de una política "Fable lane" en el protocolo.
+`IMPROVEMENTS.md` recorded an informal observation: "two Fable agents (~200k
+combined tokens) moved the Sonnet 5h pool only 1 point (62%→63%)". If that
+were representative, delegating [MECHANICAL] blocks to Fable agents when the weekly
+Fable allowance has margin would be near-free capacity for the 5h window — hence
+the idea of a "Fable lane" policy in the protocol.
 
-Este experimento instrumentó una comparación controlada: el mismo asignador de
-portfolio (diseñado en B22), implementado por un agente Fable (B23) y luego
-testeado/documentado por un agente Sonnet como control (B24), midiendo los 3
-medidores relevantes (five_hour de cuenta, seven_day all-models, Fable semanal)
-antes y después de cada delegación.
+This experiment instrumented a controlled comparison: the same portfolio
+allocator (designed in B22), implemented by a Fable agent (B23) and then
+tested/documented by a Sonnet agent as control (B24), measuring the 3
+relevant meters (account five_hour, seven_day all-models, weekly Fable)
+before and after each delegation.
 
-## Datos
+## Data
 
-| Bloque | Modelo del subagente | subagent_tokens | tool_uses | five_hour Δ | seven_day (all-models) Δ | Fable semanal Δ |
+| Block | Subagent model | subagent_tokens | tool_uses | five_hour Δ | seven_day (all-models) Δ | Weekly Fable Δ |
 |---|---|---|---|---|---|---|
 | B23 | Fable 5 | 62,308 | 14 | **+11** (28→39) | +1 (24→25) | +1 (23→24) |
 | B24 | Sonnet 5 | 90,673 | 37 | **+4** (39→43) | +1 (25→26) | +0 (24→24) |
 
-Tasa five_hour por token:
-- B23 (Fable): 11 / 62,308 ≈ **1.77 puntos por cada 10k tokens**
-- B24 (Sonnet): 4 / 90,673 ≈ **0.44 puntos por cada 10k tokens**
+five_hour rate per token:
+- B23 (Fable): 11 / 62,308 ≈ **1.77 points per 10k tokens**
+- B24 (Sonnet): 4 / 90,673 ≈ **0.44 points per 10k tokens**
 
-B23 costó ~4x más five_hour por token que B24, pese a que B24 hizo más trabajo real
-(más tokens, más del doble de tool calls).
+B23 cost ~4x more five_hour per token than B24, despite B24 doing more real
+work (more tokens, more than double the tool calls).
 
-## Interpretación
+## Interpretation
 
-**La hipótesis original NO se confirma — el resultado apunta en la dirección
-contraria.** En esta comparación:
+**The original hypothesis is NOT confirmed — the result points in the opposite
+direction.** In this comparison:
 
-1. El pool de five_hour (el que gatea este protocolo) se movió **más**, no menos,
-   cuando el trabajo se delegó a Fable — tanto en términos absolutos (+11 vs +4)
-   como normalizado por token (~4x).
-2. El Fable semanal sí se movió exclusivamente con el agente Fable (+1 vs +0 del
-   control Sonnet) — eso confirma que ese medidor específico está atado al modelo,
-   como se esperaba. Pero el monto es chico (1 punto) incluso para una tarea
-   sustancial — coherente con la observación original de "casi gratis", **si esa
-   observación se refería al pool semanal de Fable y no al de 5h**. Es la
-   explicación más simple del aparente contraste: probablemente la nota original
-   confundió qué medidor se había movido poco.
-3. Conclusión práctica: delegar [MECHANICAL] a un agente Fable no libera margen del
-   pool de 5h — en esta medición, lo consume más rápido que delegar a Sonnet. La
-   política "Fable lane" tal como se propuso (explotar margen de Fable semanal como
-   capacidad casi gratis para la ventana de 5h) **no tiene sustento en este dato**.
+1. The five_hour pool (the one that gates this protocol) moved **more**, not less,
+   when the work was delegated to Fable — both in absolute terms (+11 vs +4)
+   and normalized per token (~4x).
+2. Weekly Fable did move exclusively with the Fable agent (+1 vs +0 for the
+   Sonnet control) — that confirms that specific meter is tied to the model,
+   as expected. But the amount is small (1 point) even for a
+   substantial task — consistent with the original "near-free" observation,
+   **if that observation referred to the weekly Fable pool and not the 5h
+   one**. That's the simplest explanation for the apparent contrast: the
+   original note probably confused which meter had moved little.
+3. Practical conclusion: delegating [MECHANICAL] work to a Fable agent does not free up
+   5h-pool margin — in this measurement, it consumes it faster than delegating
+   to Sonnet. The "Fable lane" policy as originally proposed (exploiting weekly
+   Fable margin as near-free capacity for the 5h window) **has no support in
+   this data**.
 
-## Limitaciones (n=1 por modelo, léase con cautela en la magnitud, no en la dirección)
+## Limitations (n=1 per model, read with caution on magnitude, not direction)
 
-- Un solo punto de dato por modelo — la propia calibración de este proyecto ya
-  muestra error mediano de estimación de 40-60%+ en buckets con pocos datos
-  (ver `SESSION_STATE.md` → Cost calibration). La magnitud exacta (4x) puede no
-  repetirse, pero la dirección (Fable no es más barato en five_hour) es una
-  diferencia grande, no un empate technical.
-- B23 y B24 son tareas distintas (implementación vs. tests/docs) y de tamaño
-  distinto (M vs S) — parte de la diferencia podría deberse a la forma de la tarea,
-  no solo al modelo. No se controló por tipo de tarea.
-- No se puede descartar del todo contaminación paralela de otra ventana de la cuenta
-  durante el intervalo — se detectó una escritura de `usage_snapshot.json` desde
-  otra sesión (proyecto `initium`) en el preflight de esta misma sesión, antes de
-  que arrancara el experimento. Los chequeos de `session_id` en los extremos de
-  cada medición (pre/post) no mostraron esa contaminación durante B23/B24
-  específicamente, pero solo son fotos, no cobertura continua del intervalo.
-- Ambos subagentes heredaron el effort de la sesión (auto) sin override explícito —
-  no se controló el nivel de effort por separado del modelo.
+- A single data point per model — this project's own calibration already
+  shows median estimation error of 40-60%+ in buckets with little data
+  (see `SESSION_STATE.md` → Cost calibration). The exact magnitude (4x) may not
+  repeat, but the direction (Fable isn't cheaper on five_hour) is a large
+  difference, not a technical tie.
+- B23 and B24 are different tasks (implementation vs. tests/docs) and different
+  sizes (M vs S) — part of the difference could be due to the shape of the task,
+  not just the model. Task type was not controlled for.
+- Parallel contamination from another window of the account during the
+  interval can't be fully ruled out — a `usage_snapshot.json` write from
+  another session (`initium` project) was detected in this session's preflight,
+  before the experiment started. The `session_id` checks at the endpoints of
+  each measurement (pre/post) showed no such contamination during B23/B24
+  specifically, but those are just snapshots, not continuous coverage of the
+  interval.
+- Both subagents inherited the session's effort (auto) with no explicit override —
+  effort level was not controlled for separately from the model.
 
-## Recomendación
+## Recommendation
 
-- **No** adoptar la política "Fable lane" de delegación automática tal como estaba
-  planteada en `IMPROVEMENTS.md`. Mover esa idea de "Aceptadas" a "Descartadas" con
-  esta evidencia, dejando condición de reapertura explícita: si una medición futura
-  con más muestras (distintos tamaños de bloque, mismo tipo de tarea en ambos
-  modelos) muestra lo contrario, reabrir.
-- El campo `agent_model` en el schema de líneas de bloque (usado ad-hoc en esta
-  sesión para B23/B24, ver notas en `budget_log.jsonl`) sí demostró ser útil para
-  este tipo de medición y es independiente de si la política "Fable lane" se adopta
-  o no — vale la pena proponerlo como bump de spec menor (registra qué modelo
-  ejecutó el trabajo delegado, sin implicar ninguna política de decisión). Texto
-  propuesto para aprobación del usuario, no commiteado todavía (regla dura del
-  protocolo: cambios estructurales solo con aprobación explícita).
-- El asignador de portfolio (B22-B24) sigue siendo válido y útil independientemente
-  de este resultado — su recomendación de modelo ya cae automáticamente a "sonnet"
-  para bloques MECHANICAL sin margen fresco de Fable semanal, lo cual, a la luz de
-  este hallazgo, es probablemente el comportamiento correcto por defecto de todos
-  modos.
+- **Do not** adopt the "Fable lane" automatic-delegation policy as originally
+  proposed in `IMPROVEMENTS.md`. Move that idea from "Accepted" to "Discarded" with
+  this evidence, leaving an explicit reopening condition: if a future measurement
+  with more samples (different block sizes, same task type on both
+  models) shows the opposite, reopen it.
+- The `agent_model` field in the block-line schema (used ad-hoc in this
+  session for B23/B24, see notes in `budget_log.jsonl`) did prove useful for
+  this type of measurement and is independent of whether the "Fable lane" policy
+  is adopted or not — worth proposing as a minor spec bump (records which
+  model executed the delegated work, without implying any decision policy). Text
+  proposed for user approval, not committed yet (hard protocol rule:
+  structural changes only with explicit approval).
+- The portfolio allocator (B22-B24) remains valid and useful regardless
+  of this result — its model recommendation already falls back to "sonnet"
+  for MECHANICAL blocks with no fresh weekly Fable margin, which, in light of
+  this finding, is probably the correct default behavior anyway.

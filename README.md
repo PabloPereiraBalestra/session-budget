@@ -1,23 +1,23 @@
 # session-budget
 
-Skill de Claude Code para planificación consciente del presupuesto de tokens: divide el trabajo en bloques atómicos, mide el costo de cada bloque contra el límite de 5 horas del plan, y corta la ejecución antes de derramar hacia uso extra. El sistema se auto-instala, se auto-mide y se auto-calibra.
+Claude Code skill for token-budget-aware planning: splits work into atomic blocks, measures each block's cost against the plan's 5-hour limit, and cuts execution before spilling into extra usage. The system self-installs, self-measures, and self-calibrates.
 
-## Qué hace
+## What it does
 
-- Instala un statusline que persiste cada snapshot de uso (`~/.claude/usage_snapshot.json`) sin depender de ningún parser, así la persistencia nunca falla aunque el render falle.
-- Inserta un protocolo de sesión en el `CLAUDE.md` del proyecto: cada bloque de trabajo se etiqueta `[DESIGN]` o `[MECHANICAL]` y de tamaño `S`/`M`/`L`, con una regla de go/no-go antes de arrancar cada uno.
-- Lleva el estado del backlog en `SESSION_STATE.md` y un log append-only en `budget_log.jsonl`.
-- Delega los bloques `[MECHANICAL]` a un subagente `implementer` fijado en Sonnet, para que el cambio de modelo por bloque sea automático.
-- Se auto-calibra: recalcula las medianas de costo por (tamaño, modelo) a partir del log real, en vez de quedarse con los defaults (S=5, M=12, L=25).
+- Installs a statusline that persists every usage snapshot (`~/.claude/usage_snapshot.json`) without depending on any parser, so persistence never fails even if rendering does.
+- Inserts a session protocol into the project's `CLAUDE.md`: each work block is tagged `[DESIGN]` or `[MECHANICAL]` and sized `S`/`M`/`L`, with a go/no-go rule before starting each one.
+- Tracks the backlog state in `SESSION_STATE.md` and an append-only log in `budget_log.jsonl`.
+- Delegates `[MECHANICAL]` blocks to an `implementer` subagent pinned to Sonnet, so the per-block model switch is automatic.
+- Self-calibrates: recomputes cost medians per (size, model) from the real log, instead of sticking with the defaults (S=5, M=12, L=25).
 
-## Instalación
+## Installation
 
-Copiar este directorio a `~/.claude/skills/session-budget/` (personal, todos los proyectos) o `.claude/skills/session-budget/` (por proyecto, versionado en git).
+Copy this directory to `~/.claude/skills/session-budget/` (personal, all projects) or `.claude/skills/session-budget/` (per project, versioned in git).
 
-## Uso
+## Usage
 
-Ver `references/SPEC.md` — es la fuente de verdad completa (preflight, deliverables, tests de aceptación, prompts de arranque/resume/reporte). El `SKILL.md` es deliberadamente mínimo: toda la lógica vive en la spec para no cargar contexto de más cuando el skill no hace falta.
+See `references/SPEC.md` — the complete source of truth (preflight, deliverables, acceptance tests, kickoff/resume/report prompts). `SKILL.md` is deliberately minimal: all the logic lives in the spec so it doesn't load extra context when the skill isn't needed.
 
-## Origen
+## Origin
 
-Este repo es también el primer proyecto donde el propio protocolo se aplicó a sí mismo (bootstrap): la creación de este skill se hizo bajo el mismo sistema de bloques y presupuesto que documenta.
+This repo is also the first project where the protocol was applied to itself (bootstrap): this skill was built under the same block-and-budget system it documents.
